@@ -1,0 +1,106 @@
+MPLINK 5.08, LINKER
+Linker Map File - Created Mon Feb 01 02:15:28 2016
+
+                                 Section Info
+                  Section       Type    Address   Location Size(Bytes)
+                ---------  ---------  ---------  ---------  ---------
+                   .org_0       code   0x000000    program   0x000004
+                   .cinit    romdata   0x000004    program   0x000002
+                   .org_1       code   0x000008    program   0x000004
+                   .org_2       code   0x000018    program   0x0001fc
+.config_300001_BUILD/DEFAULT/PRODUCTION/MAIN.O    romdata   0x300001    program   0x000001
+.config_300002_BUILD/DEFAULT/PRODUCTION/MAIN.O    romdata   0x300002    program   0x000001
+.config_300003_BUILD/DEFAULT/PRODUCTION/MAIN.O    romdata   0x300003    program   0x000001
+.config_300005_BUILD/DEFAULT/PRODUCTION/MAIN.O    romdata   0x300005    program   0x000001
+.config_300006_BUILD/DEFAULT/PRODUCTION/MAIN.O    romdata   0x300006    program   0x000001
+.config_300008_BUILD/DEFAULT/PRODUCTION/MAIN.O    romdata   0x300008    program   0x000001
+.config_300009_BUILD/DEFAULT/PRODUCTION/MAIN.O    romdata   0x300009    program   0x000001
+.config_30000A_BUILD/DEFAULT/PRODUCTION/MAIN.O    romdata   0x30000a    program   0x000001
+.config_30000B_BUILD/DEFAULT/PRODUCTION/MAIN.O    romdata   0x30000b    program   0x000001
+.config_30000C_BUILD/DEFAULT/PRODUCTION/MAIN.O    romdata   0x30000c    program   0x000001
+.config_30000D_BUILD/DEFAULT/PRODUCTION/MAIN.O    romdata   0x30000d    program   0x000001
+
+
+
+                              Program Memory Usage 
+                               Start         End      
+                           ---------   ---------      
+                            0x000000    0x000005      
+                            0x000008    0x00000b      
+                            0x000018    0x000213      
+                            0x300001    0x300003      
+                            0x300005    0x300006      
+                            0x300008    0x30000d      
+            529 out of 66584 program addresses used, program memory utilization is 0%
+
+
+
+                              Symbols - Sorted by Name
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+                 ClearLCD   0x0001e0    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+                Delay44us   0x000208    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+            Delay44usLoop   0x00020c    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+                 Delay5ms   0x0001fa    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+             Delay5msLoop   0x0001fe    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+            InitializeLCD   0x00014a    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+                Interrupt   0x000212    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+                Loop16LCD   0x0001c2    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+                     Main   0x000116    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+                  MoveMSB   0x0001ce    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+                    Pause   0x000148    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+          TableMenuTitle0   0x00001a    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+         TableMenuTitle00   0x00003e    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+         TableMenuTitle01   0x000050    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+         TableMenuTitle02   0x000062    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+         TableMenuTitle03   0x000074    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+         TableMenuTitle04   0x000086    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+         TableMenuTitle05   0x000098    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+         TableMenuTitle06   0x0000aa    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+         TableMenuTitle07   0x0000bc    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+         TableMenuTitle08   0x0000ce    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+          TableMenuTitle1   0x00002c    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+         TableMenuTitle10   0x0000e0    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+         TableMenuTitle11   0x0000f2    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+         TableMenuTitle12   0x000104    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+               TopMenuOne   0x00012e    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+         Write16DataToLCD   0x0001be    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+           WriteDataToLCD   0x00019e    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+           WriteInstToLCD   0x00017e    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+
+
+
+                              Symbols - Sorted by Address
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+          TableMenuTitle0   0x00001a    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+          TableMenuTitle1   0x00002c    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+         TableMenuTitle00   0x00003e    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+         TableMenuTitle01   0x000050    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+         TableMenuTitle02   0x000062    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+         TableMenuTitle03   0x000074    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+         TableMenuTitle04   0x000086    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+         TableMenuTitle05   0x000098    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+         TableMenuTitle06   0x0000aa    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+         TableMenuTitle07   0x0000bc    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+         TableMenuTitle08   0x0000ce    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+         TableMenuTitle10   0x0000e0    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+         TableMenuTitle11   0x0000f2    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+         TableMenuTitle12   0x000104    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+                     Main   0x000116    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+               TopMenuOne   0x00012e    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+                    Pause   0x000148    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+            InitializeLCD   0x00014a    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+           WriteInstToLCD   0x00017e    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+           WriteDataToLCD   0x00019e    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+         Write16DataToLCD   0x0001be    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+                Loop16LCD   0x0001c2    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+                  MoveMSB   0x0001ce    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+                 ClearLCD   0x0001e0    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+                 Delay5ms   0x0001fa    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+             Delay5msLoop   0x0001fe    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+                Delay44us   0x000208    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+            Delay44usLoop   0x00020c    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+                Interrupt   0x000212    program     static C:\Users\micha\Documents\AER201\aer201.X\main.asm
+
+

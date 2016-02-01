@@ -1,0 +1,398 @@
+MPASM 5.65                          MAIN.ASM   2-1-2016  2:15:27         PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00001 ; ********************************************************************************
+                      00002 ; Barrel Inspection Machine
+                      00003 ; Ming Kun Yang (1001262224)
+                      00004 ; ********************************************************************************
+                      00005 
+                      00006 
+                      00007 #include <p18f4620.inc>
+                      00001         LIST
+                      00002 
+                      00003 ;==========================================================================
+                      00004 ; Build date : Dec 08 2015
+                      00005 ;  MPASM PIC18F4620 processor include
+                      00006 ; 
+                      00007 ;  (c) Copyright 1999-2015 Microchip Technology, All rights reserved
+                      00008 ;==========================================================================
+                      00009 
+                      01440         LIST
+                      00008     list P=18F4620, F=INHX32, C=160, N=80, ST=OFF, MM=OFF, R=DEC
+                      00009 
+                      00010 ; ********************************************************************************
+                      00011 ; Configuration bits
+                      00012 ; ********************************************************************************
+                      00013 
+                      00014     config OSC  = HS, FCMEN = OFF, IESO = OFF
+                      00015     config PWRT = OFF, BOREN = SBORDIS, BORV = 3
+                      00016     config WDT  = OFF, WDTPS = 32768
+                      00017     config MCLRE = ON, LPT1OSC = OFF, PBADEN = OFF, CCP2MX = PORTC
+                      00018     config STVREN = ON, LVP = OFF, XINST = OFF
+                      00019     config DEBUG = OFF
+                      00020     config CP0 = OFF, CP1 = OFF, CP2 = OFF, CP3 = OFF, CPB = OFF, CPD = OFF
+                      00021     config WRT0 = OFF, WRT1 = OFF, WRT2 = OFF, WRT3 = OFF
+                      00022     config WRTB = OFF, WRTC = OFF, WRTD = OFF
+                      00023     config EBTR0 = OFF, EBTR1 = OFF, EBTR2 = OFF, EBTR3 = OFF, EBTRB = OFF
+                      00024     
+                      00025 ; ********************************************************************************
+                      00026 ; Definitions
+                      00027 ; ********************************************************************************
+                      00028 #define  MOTOR_BASE PORTC, 1
+                      00029 #define  LCD_RS     PORTD, 2    
+                      00030 #define  LCD_E      PORTD, 3
+                      00031 
+                      00032 
+                      00033 ; ********************************************************************************
+                      00034 ; General Purpose Register Assignments
+                      00035 ; ********************************************************************************
+                      00036 
+  00000020            00037 Temp0                       equ 0x20;
+  00000021            00038 Temp1                       equ 0x21;
+  00000022            00039 Temp2                       equ 0x22;
+  00000025            00040 DelayCounter0               equ 0x25;
+  00000026            00041 DelayCounter1               equ 0x26;
+                      00042 
+                      00043 ; ********************************************************************************
+                      00044 ; Macros
+                      00045 ; ********************************************************************************
+                      00046 
+                      00047 
+                      00048 ifequal  macro  Var, Value, Label
+                      00049     movlw   Value
+                      00050     subwf   Var, 0                      ; check if Var-Value=0
+                      00051     bz      Label
+                      00052     endm
+                      00053 
+                      00054 ifnequal macro  Var, Value, Label
+                      00055     movlw   Value
+                      00056     subwf   Var, 0                      ; check if Var-Value!=0
+                      00057     bnz     Label
+                      00058     endm
+                      00059 
+                      00060 store macro Destination, Value
+                      00061     movlw   Value
+                      00062     movwf   Destination
+                      00063     endm
+                      00064     
+MPASM 5.65                          MAIN.ASM   2-1-2016  2:15:27         PAGE  2
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00065 printline macro  TableName, LineNumber
+                      00066     movlw   LineNumber                 
+                      00067     call    WriteInstToLCD              
+                      00068     movlw   upper TableName             
+                      00069     movwf   TBLPTRU
+                      00070     movlw   high TableName
+                      00071     movwf   TBLPTRH
+                      00072     movlw   low TableName
+                      00073     movwf   TBLPTRL
+                      00074     ; Do 16 Loops to display all 16 characters in the TableName
+                      00075     call    Write16DataToLCD
+                      00076     endm
+                      00077 
+                      00078 printch  macro Char, Position, LineNumber 
+                      00079     movlw   LineNumber                 
+                      00080     call    WriteInstToLCD
+                      00081     movlw   Position
+                      00082     call    WriteInstToLCD
+                      00083     movlw   Char
+                      00084     call    WriteDataToLCD
+                      00085     endm
+                      00086  
+                      00087 ; ********************************************************************************
+                      00088 ; Variables for Assembler
+                      00089 ; ********************************************************************************
+  00989680            00090 Line0           set 10000000
+  00A7D8C0            00091 Line1           set 11000000
+                      00092 
+  00989680            00093 Char00          set 10000000
+  00989681            00094 Char01          set 10000001
+  0098968A            00095 Char02          set 10000010
+  0098968B            00096 Char03          set 10000011
+  009896E4            00097 Char04          set 10000100
+  009896E5            00098 Char05          set 10000101
+  009896EE            00099 Char06          set 10000110
+  009896EF            00100 Char07          set 10000111
+  00989A68            00101 Char08          set 10001000
+  00989A69            00102 Char09          set 10001001
+  00989A72            00103 Char0A          set 10001010
+  00989A73            00104 Char0B          set 10001011
+  00989ACC            00105 Char0C          set 10001100
+  00989ACD            00106 Char0D          set 10001101
+  00989AD6            00107 Char0E          set 10001110
+  00989AD7            00108 Char0F          set 10001111
+  00A7D8C0            00109 Char10          set 11000000
+  00A7D8C1            00110 Char11          set 11000001
+  00A7D8CA            00111 Char12          set 11000010
+  00A7D8CB            00112 Char13          set 11000011
+  00A7D924            00113 Char14          set 11000100
+  00A7D925            00114 Char15          set 11000101
+  00A7D92E            00115 Char16          set 11000110
+  00A7D92F            00116 Char17          set 11000111
+  00A7DCA8            00117 Char18          set 11001000
+  00A7DCA9            00118 Char19          set 11001001
+  00A7DCB2            00119 Char1A          set 11001010
+  00A7DCB3            00120 Char1B          set 11001011
+  00A7DD0C            00121 Char1C          set 11001100
+  00A7DD0D            00122 Char1D          set 11001101
+  00A7DD16            00123 Char1E          set 11001110
+  00A7DD17            00124 Char1F          set 11001111
+                      00125 ; ********************************************************************************
+                      00126 ; Vector Table
+                      00127 ; ********************************************************************************
+                      00128 
+                      00129     org     0x0000                  ; Reset vector
+000000 EF?? F???      00130     goto    Main
+                      00131     org     0x0008                  ; When Low Priority Interrupt occurs
+000008 EF?? F???      00132     goto    Interrupt
+                      00133     org     0x0018                  ; When High Priority Interrupt occurs    
+000018 0010           00134     retfie
+                      00135     
+                      00136 ; ********************************************************************************
+                      00137 ; Tables
+                      00138 ; ********************************************************************************
+MPASM 5.65                          MAIN.ASM   2-1-2016  2:15:27         PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+00001A 203C 2020 2020 00139 TableMenuTitle0             db  "<     START    >", 0
+       5453 5241 2054 
+       2020 3E20 0000 
+00002C 203C 2020 4144 00140 TableMenuTitle1             db  "<   DATA LOG   >", 0
+       4154 4C20 474F 
+       2020 3E20 0000 
+                      00141 
+00003E 4E49 5053 4345 00142 TableMenuTitle00            db  "INSPECTING.     ", 0
+       4954 474E 202E 
+       2020 2020 0000 
+000050 4E49 5053 4345 00143 TableMenuTitle01            db  "INSPECTING..    ", 0
+       4954 474E 2E2E 
+       2020 2020 0000 
+000062 4E49 5053 4345 00144 TableMenuTitle02            db  "INSPECTING...   ", 0
+       4954 474E 2E2E 
+       202E 2020 0000 
+000074 4E49 5053 4345 00145 TableMenuTitle03            db  "INSPECTING....  ", 0
+       4954 474E 2E2E 
+       2E2E 2020 0000 
+000086 4E49 5053 4345 00146 TableMenuTitle04            db  "INSPECTING..... ", 0
+       4954 474E 2E2E 
+       2E2E 202E 0000 
+000098 4E49 5053 4345 00147 TableMenuTitle05            db  "INSPECTING......", 0
+       4954 474E 2E2E 
+       2E2E 2E2E 0000 
+0000AA 2D2D 2D2D 4F43 00148 TableMenuTitle06            db  "----COMPLETE----", 0
+       504D 454C 4554 
+       2D2D 2D2D 0000 
+0000BC 313C 203E 2020 00149 TableMenuTitle07            db  "<1>    SAVE DATA", 0
+       5320 5641 2045 
+       4144 4154 0000 
+0000CE 323C 493E 534E 00150 TableMenuTitle08            db  "<2>INSPECT AGAIN", 0
+       4550 5443 4120 
+       4147 4E49 0000 
+                      00151 
+0000E0 313C 203E 2020 00152 TableMenuTitle10            db  "<1>      DATA #1", 0
+       2020 4420 5441 
+       2041 3123 0000 
+0000F2 323C 203E 2020 00153 TableMenuTitle11            db  "<2>      DATA #2", 0
+       2020 4420 5441 
+       2041 3223 0000 
+000104 333C 203E 2020 00154 TableMenuTitle12            db  "<3>      DATA #3", 0
+       2020 4420 5441 
+       2041 3323 0000 
+                      00155 
+                      00156 
+                      00157     
+                      00158     
+                      00159 ; ********************************************************************************
+                      00160 ; Executable Code 
+                      00161 ; ********************************************************************************
+                      00162     
+000116                00163 Main
+                      00164     ; initialization
+000116 6A92           00165     clrf    TRISA                   ; sets all ports as output
+000118 6A93           00166     clrf    TRISB
+00011A 6A94           00167     clrf    TRISC
+00011C 6A95           00168     clrf    TRISD
+00011E 6A96           00169     clrf    TRISE
+                      00170     
+000120 6A80           00171     clrf    PORTA
+000122 6A81           00172     clrf    PORTB
+000124 6A82           00173     clrf    PORTC
+000126 6A83           00174     clrf    PORTD
+000128 6A84           00175     clrf    PORTE
+                      00176 
+                      00177     ; EEPROM initialization $%^&$%^&
+                      00178     
+                      00179     
+00012A EC?? F???      00180     call    InitializeLCD
+                      00181     
+00012E                00182 TopMenuOne
+00012E EC?? F???      00183     call    ClearLCD
+                      00184     printline TableMenuTitle0, B'10000000'
+MPASM 5.65                          MAIN.ASM   2-1-2016  2:15:27         PAGE  4
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+000132 0E80               M     movlw   B'10000000'                
+000134 EC?? F???          M     call    WriteInstToLCD              
+000138 0E??               M     movlw   upper TableMenuTitle0       
+00013A 6EF8               M     movwf   TBLPTRU
+00013C 0E??               M     movlw   high TableMenuTitle0
+00013E 6EF7               M     movwf   TBLPTRH
+000140 0E??               M     movlw   low TableMenuTitle0
+000142 6EF6               M     movwf   TBLPTRL
+                          M     ; Do 16 Loops to display all 16 characters in the TableName
+000144 EC?? F???          M     call    Write16DataToLCD
+                      00185     
+000148                00186 Pause
+000148 D???           00187     bra     Pause
+                      00188     
+                      00189     
+                      00190 ; ********************************************************************************
+                      00191 ; LCD Functions 
+                      00192 ; ********************************************************************************
+                      00193 
+                      00194 ; InitializeLCD: set configuration for the LCD Display
+                      00195 ; Input: None                       Output: None
+00014A                00196 InitializeLCD
+00014A EC?? F???      00197     call        Delay5ms
+00014E EC?? F???      00198     call        Delay5ms
+000152 0E33           00199     movlw       B'00110011'         ; set for 8 bit twice
+000154 EC?? F???      00200     call        WriteInstToLCD
+000158 0E33           00201     movlw       B'00110011'         ; set for 8 bit
+00015A EC?? F???      00202     call        WriteInstToLCD
+00015E 0E33           00203     movlw       B'00110011'         ; set for 8 bit once again, then 4 bit
+000160 EC?? F???      00204     call        WriteInstToLCD
+000164 0E28           00205     movlw       B'00101000'         ; 4 bits, 2 lines, 5x8
+000166 EC?? F???      00206     call        WriteInstToLCD
+00016A 0E0C           00207     movlw       B'00001100'         ; display on/off
+00016C EC?? F???      00208     call        WriteInstToLCD
+000170 0E06           00209     movlw       B'00000110'         ; entry mode
+000172 EC?? F???      00210     call        WriteInstToLCD
+000176 0E01           00211     movlw       B'00000001'         ; clear ram
+000178 EC?? F???      00212     call        WriteInstToLCD
+00017C 0012           00213     return
+                      00214     
+                      00215     
+                      00216 ; WriteInstToLCD: sequences of command to modify the config of LCD
+                      00217 ; Input: W                         Output: None
+00017E                00218 WriteInstToLCD
+00017E 9483           00219     bcf     LCD_RS                  ; clear RS to enter instruction mode
+000180 6E20           00220     movwf   Temp0                   ; store into Temporary register
+000182 EC?? F???      00221     call    MoveMSB
+000186 8683           00222     bsf     LCD_E                   ; pulse LCD high
+000188 0000           00223     nop
+00018A 9683           00224     bcf     LCD_E                   ; pulse LCD low
+00018C 3820           00225     swapf   Temp0, W                ; swap nibbles
+00018E EC?? F???      00226     call    MoveMSB
+000192 8683           00227     bsf     LCD_E                   ; pulse LCD high
+000194 0000           00228     nop                             ; wait
+000196 9683           00229     bcf     LCD_E                   ; pulse LCD low
+000198 EC?? F???      00230     call    Delay5ms
+00019C 0012           00231     return
+                      00232     
+                      00233 ; WriteDataToLCD: sequences of command to display a character on LCD
+                      00234 ; Input: W                          Output: None
+00019E                00235 WriteDataToLCD
+00019E 8483           00236     bsf     LCD_RS                  ; set RS for data mode
+0001A0 6E20           00237     movwf   Temp0       ; store into temporary register
+0001A2 EC?? F???      00238     call    MoveMSB
+0001A6 8683           00239     bsf     LCD_E                   ; pulse LCD high
+0001A8 0000           00240     nop
+0001AA 9683           00241     bcf     LCD_E                   ; pulse LCD low
+0001AC 3820           00242     swapf   Temp0, W                ; swap nibbles
+0001AE EC?? F???      00243     call    MoveMSB
+0001B2 8683           00244     bsf     LCD_E                   ; pulse LCD high
+0001B4 0000           00245     nop                             ; wait
+0001B6 9683           00246     bcf     LCD_E                   ; pulse LCD low
+0001B8 EC?? F???      00247     call    Delay44us
+0001BC 0012           00248     return
+MPASM 5.65                          MAIN.ASM   2-1-2016  2:15:27         PAGE  5
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00249     
+                      00250 ; Write16DataToLCD: Take 16 Character from the table, and display them one by
+                      00251 ;                   one, by invoking the subroutine WriteDataToLCD for 16 times
+                      00252 ; Input: tblrd (Table Pointer)      Output: None
+0001BE                00253 Write16DataToLCD
+0001BE 0008           00254     tblrd*                          ; read first character in table
+0001C0 50F5           00255     movf    TABLAT, W
+Warning[207]: Found label after column 1. (Loop16LCD)
+0001C2                00256     Loop16LCD
+0001C2 EC?? F???      00257         call    WriteDataToLCD
+0001C6 000B           00258         tblrd+*                     ; increment pointer then read
+0001C8 50F5           00259         movf    TABLAT, W
+0001CA E1??           00260         bnz     Loop16LCD
+0001CC 0012           00261     return
+                      00262     
+                      00263 ; MoveMSB: Move the upper 4 bits of W into PORTD without affecting current
+                      00264 ;          values in it
+                      00265 ; Input: W                       Output: None
+0001CE                00266 MoveMSB
+0001CE CF83 F021      00267     movff   PORTD, Temp1
+0001D2 0BF0           00268     andlw   0xF0
+0001D4 1221           00269     iorwf   Temp1,F                 ; OR operation and store it in File Reg
+0001D6 090F           00270     iorlw   0x0F
+0001D8 1621           00271     andwf   Temp1,F                 ; AND operation and store it in File Reg
+0001DA C021 FF83      00272     movff   Temp1, PORTD
+0001DE 0012           00273     return
+                      00274 
+                      00275 ; ClearLCD: Clear the entire LCD
+                      00276 ; Input: None                   Output: None
+0001E0                00277 ClearLCD
+0001E0 0EC0           00278     movlw   B'11000000'             ; 2nd line
+0001E2 EC?? F???      00279     call    WriteInstToLCD
+0001E6 0E01           00280     movlw   B'00000001'             ; clear 2nd line
+0001E8 EC?? F???      00281     call    WriteInstToLCD
+0001EC 0E80           00282     movlw   B'10000000'             ; 1st line
+0001EE EC?? F???      00283     call    WriteInstToLCD
+0001F2 0E01           00284     movlw   B'00000001'             ; clear 1st line
+0001F4 EC?? F???      00285     call    WriteInstToLCD
+0001F8 0012           00286     return
+                      00287     
+0001FA                00288 Delay5ms
+                      00289     store   DelayCounter1, d'110'
+0001FA 0E6E               M     movlw   d'110'
+0001FC 6E26               M     movwf   DelayCounter1
+Warning[207]: Found label after column 1. (Delay5msLoop)
+0001FE                00290     Delay5msLoop
+0001FE EC?? F???      00291         call    Delay44us
+000202 2E26           00292         decfsz  DelayCounter1, 1
+000204 D???           00293         bra     Delay5msLoop
+000206 0012           00294     return
+                      00295     
+000208                00296 Delay44us
+                      00297     store   DelayCounter0, 0x23
+000208 0E23               M     movlw   0x23
+00020A 6E25               M     movwf   DelayCounter0
+Warning[207]: Found label after column 1. (Delay44usLoop)
+00020C                00298     Delay44usLoop
+00020C 2E25           00299         decfsz  DelayCounter0, 1
+00020E D???           00300         bra     Delay44usLoop
+000210 0012           00301     return
+                      00302     
+000212                00303 Interrupt
+000212 D???           00304     bra     Interrupt
+                      00305     
+Warning[205]: Found directive in column 1. (end)
+                      00306 end
+
+Errors   :     0
+Warnings :     4 reported,     0 suppressed
+Messages :     0 reported,     0 suppressed
+
+
