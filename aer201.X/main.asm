@@ -25,9 +25,13 @@
 ; ********************************************************************************
 ; Definitions
 ; ********************************************************************************
-#define	 MOTOR_BASE PORTC, 1
-#define  LCD_RS	    PORTD, 2	
-#define  LCD_E	    PORTD, 3
+#define LCD_RS	    PORTD, 2	
+#define LCD_E	    PORTD, 3
+    
+#define	LEFT_B	    PORTC, 0
+#define	RIGHT_B	    PORTC, 1
+#define SELECT_B    PORTC, 2
+#define QUIT_B	    PORTC, 3
 
 
 ; ********************************************************************************
@@ -37,26 +41,49 @@
 Temp0                       equ 0x20;
 Temp1                       equ 0x21;
 Temp2                       equ 0x22;
+Temp3			    equ 0x23;
+Temp4			    equ 0x24;
+
 DelayCounter0		    equ 0x25;
 DelayCounter1		    equ 0x26;
-
+		    
+DisplayMode		    equ 0x30;
+OperatingMode		    equ 0x31;
+PrevButtonState		    equ 0x32;	
+ButtonPushed		    equ 0x33;		    
 ; ********************************************************************************
 ; Macros
 ; ********************************************************************************
 
 
-ifequal  macro  Var, Value, Label
+ifequalf  macro  Var, Value, Label
     movlw   Value
     subwf   Var, 0                      ; check if Var-Value=0
-    bz      Label
+    btfsc   STATUS, 2
+    call    Label
+    endm
+    
+ifequalb  macro  Var, Value, Label
+    movlw   Value
+    subwf   Var, 0                      ; check if Var-Value=0
+    btfsc   STATUS, 2
+    goto    Label
     endm
 
-ifnequal macro  Var, Value, Label
+ifnequalf macro  Var, Value, Label
     movlw   Value
     subwf   Var, 0                      ; check if Var-Value!=0
-    bnz     Label
+    btfss   STATUS, 2
+    call    Label
     endm
 
+ifnequalb macro  Var, Value, Label
+    movlw   Value
+    subwf   Var, 0                      ; check if Var-Value!=0
+    btfss   STATUS, 2
+    goto    Label
+    endm
+    
 store macro Destination, Value
     movlw   Value
     movwf   Destination
@@ -122,6 +149,7 @@ Char1C          set 11001100
 Char1D          set 11001101
 Char1E          set 11001110
 Char1F          set 11001111
+	  
 ; ********************************************************************************
 ; Vector Table
 ; ********************************************************************************
@@ -162,29 +190,222 @@ TableMenuTitle12            db  "<3>      DATA #3", 0
     
 Main
     ; initialization
-    clrf    TRISA                   ; sets all ports as output
-    clrf    TRISB
-    clrf    TRISC
-    clrf    TRISD
-    clrf    TRISE
+    clrf	TRISA                   ; sets all ports as output
+    clrf	TRISB
+    clrf	TRISC
+    clrf	TRISD
+    clrf	TRISE
     
-    clrf    PORTA
-    clrf    PORTB
-    clrf    PORTC
-    clrf    PORTD
-    clrf    PORTE
-
+    clrf        PORTA
+    clrf	PORTB
+    clrf	PORTC
+    clrf	PORTD
+    clrf	PORTE
+    
+    store	TRISC, B'1111'
+    
     ; EEPROM initialization $%^&$%^&
+    store	DisplayMode, B'1100'
+    call	InitializeLCD
+    call	UpdateDisplay
+    
+    MainLoop
+	; polls push buttons
+	btfsc	SELECT_B
+	call	SelectedPushed
+	btfsc	LEFT_B
+	call	LeftPushed
+	btfsc	RIGHT_B
+	call	RightPushed  
+	btfsc	QUIT_B
+	call	QuitPushed
+	btfsc	ButtonPushed, 0 
+	call	UpdateDisplay
+	bcf	ButtonPushed, 0
+	movff	PORTC, PrevButtonState
+	bra	MainLoop
+    
+; UpdateDisplay: Updates display when user of the machine has changed modes
+; Input: DisplayMode		    Output: None
+UpdateDisplay 
+    call ClearLCD
+    
+    ifequalf	DisplayMode, B'00', TopMenu0
+    ifequalf	DisplayMode, B'01', TopMenu1
+    ifequalf	DisplayMode, B'10', SubMenu00
+    ifequalf	DisplayMode, B'11', SubMenu01
+    ifequalf	DisplayMode, B'100', SubMenu02
+    ifequalf	DisplayMode, B'101', SubMenu03
+    ifequalf	DisplayMode, B'110', SubMenu04
+    ifequalf	DisplayMode, B'111', SubMenu05
+    ifequalf	DisplayMode, B'1000', SubMenu06
+    ifequalf	DisplayMode, B'1001', SubMenu07
+    ifequalf	DisplayMode, B'1010', SubMenu08
+    ifequalf	DisplayMode, B'1011', SubMenu10
+    ifequalf	DisplayMode, B'1100', SubMenu11
+    ifequalf	DisplayMode, B'1101', SubMenu12
+    return
+    
+TopMenu0 
+    printline	TableMenuTitle0, B'10000000'
+    return
+    
+TopMenu1 
+    printline	TableMenuTitle1, B'10000000'
+    return
+    
+SubMenu00
+    printline	TableMenuTitle00, B'10000000'
+    return
+    
+SubMenu01
+    printline	TableMenuTitle01, B'10000000'
+    return
+    
+SubMenu02
+    printline	TableMenuTitle02, B'10000000'
+    return
+    
+SubMenu03
+    printline	TableMenuTitle03, B'10000000'
+    return
+    
+SubMenu04
+    printline	TableMenuTitle04, B'10000000'
+    return
+    
+SubMenu05
+    printline	TableMenuTitle05, B'10000000'
+    return
+    
+SubMenu06
+    printline	TableMenuTitle06, B'10000000'
+    return
+    
+SubMenu07
+    printline	TableMenuTitle07, B'10000000'
+    return
+    
+SubMenu08
+    printline	TableMenuTitle08, B'10000000'
+    return
+    
+SubMenu10
+    printline	TableMenuTitle10, B'10000000'
+    return
+    
+SubMenu11
+    printline	TableMenuTitle11, B'10000000'
+    return
+    
+SubMenu12
+    printline	TableMenuTitle12, B'10000000'
+    return
+    
+; QuitPushed
+; Input: PrevButtonState	    Output: OperatingMode, DisplayMode, ButtonPushed
+QuitPushed
+    btfss   PrevButtonState, 3
+    return
+    ButtonJustPressed
+	clrf	DisplayMode
+	bsf	ButtonPushed, 0
+	return
+	
+; RightPushed
+; Input: PrevButtonState	    Output: OperatingMode, DisplayMode, ButtonPushed
+RightPushed
+    btfss   PrevButtonState, 1
+    return
+    RightButtonJustPressed
+	ifequalb DisplayMode, B'00', ScrollDownOne
+	ifequalb DisplayMode, B'1011', ScrollDownTwo
+	ifequalb DisplayMode, B'1100', ScrollDownThree
+	return
+	EndIfScrollRight
+	bsf	ButtonPushed, 0
+	return
+	
+ScrollDownOne
+    store   DisplayMode, B'01'
+    bra	    EndIfScrollRight 
+    
+ScrollDownTwo
+    bsf	    LATA, 2
+    store   DisplayMode, B'1100'
+    bra	    EndIfScrollRight
+    
+ScrollDownThree
+    bsf	    LATA, 3
+    store   DisplayMode, B'1101'
+    bra	    EndIfScrollRight
+    
+; LeftPushed
+; Input: PrevButtonState	    Output: OperatingMode, DisplayMode, ButtonPushed
+LeftPushed
+    btfss   PrevButtonState, 0
+    return
+    LeftButtonJustPressed
+	ifequalb DisplayMode, B'01', ScrollUpOne
+	ifequalb DisplayMode, B'1100', ScrollUpTwo
+	ifequalb DisplayMode, B'1101', ScrollUpThree
+	return
+	EndIfScrollLeft
+	bsf	ButtonPushed, 0
+	return
+	
+ScrollUpOne
+    store   DisplayMode, B'00'
+    bra	    EndIfScrollLeft
+    
+ScrollUpTwo
+    bsf		LATA, 0
+    store   DisplayMode, B'1011'
+    bra	    EndIfScrollLeft
+    
+ScrollUpThree
+    bsf		LATA, 1
+    store   DisplayMode, B'1100'
+    bra	    EndIfScrollLeft
+    
+; SelectedPushed
+; Input: PrevButtonState	    Output: OperatingMode, DisplayMode, ButtonPushed
+SelectedPushed
+    btfss   PrevButtonState, 2
+    return
+
+    SelectButtonJustPressed
+	ifequalb    DisplayMode, B'0', EnterOne
+	ifequalb    DisplayMode, B'1', EnterTwo
+	ifequalb    DisplayMode, B'1011', EnterThree
+	ifequalb    DisplayMode, B'1100', EnterFour
+	ifequalb    DisplayMode, B'1101', EnterFive
+	return
+	EndIfEnter
+	bsf	    ButtonPushed, 0
+	return
+	
+EnterOne
+    store   DisplayMode, B'10'
+    bra	    EndIfEnter
+
+EnterTwo
+    store   DisplayMode, B'1011'
+    bra	    EndIfEnter
+    
+EnterThree
+    bra	    EndIfEnter
+    
+EnterFour
+    bra	    EndIfEnter
+    
+EnterFive
+    bra	    EndIfEnter
+    
+
     
     
-    call    InitializeLCD
     
-TopMenuOne
-    call    ClearLCD
-    printline TableMenuTitle0, B'10000000'
-    
-Pause
-    bra     Pause
     
     
 ; ********************************************************************************
@@ -234,7 +455,7 @@ WriteInstToLCD
 ; Input: W                          Output: None
 WriteDataToLCD
     bsf     LCD_RS                  ; set RS for data mode
-    movwf   Temp0       ; store into temporary register
+    movwf   Temp0		    ; store into temporary register
     call    MoveMSB
     bsf     LCD_E                   ; pulse LCD high
     nop
@@ -303,4 +524,5 @@ Delay44us
 Interrupt
     bra	    Interrupt
     
-end
+PowerOff    
+    end
