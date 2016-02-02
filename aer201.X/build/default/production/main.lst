@@ -1,4 +1,4 @@
-MPASM 5.65                          MAIN.ASM   2-1-2016  2:15:27         PAGE  1
+MPASM 5.65                          MAIN.ASM   2-2-2016  2:09:23         PAGE  1
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -41,358 +41,879 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00025 ; ********************************************************************************
                       00026 ; Definitions
                       00027 ; ********************************************************************************
-                      00028 #define  MOTOR_BASE PORTC, 1
-                      00029 #define  LCD_RS     PORTD, 2    
-                      00030 #define  LCD_E      PORTD, 3
-                      00031 
-                      00032 
-                      00033 ; ********************************************************************************
-                      00034 ; General Purpose Register Assignments
-                      00035 ; ********************************************************************************
+                      00028 #define LCD_RS      PORTD, 2    
+                      00029 #define LCD_E       PORTD, 3
+                      00030     
+                      00031 #define LEFT_B      PORTC, 0
+                      00032 #define RIGHT_B     PORTC, 1
+                      00033 #define SELECT_B    PORTC, 2
+                      00034 #define QUIT_B      PORTC, 3
+                      00035 
                       00036 
-  00000020            00037 Temp0                       equ 0x20;
-  00000021            00038 Temp1                       equ 0x21;
-  00000022            00039 Temp2                       equ 0x22;
-  00000025            00040 DelayCounter0               equ 0x25;
-  00000026            00041 DelayCounter1               equ 0x26;
-                      00042 
-                      00043 ; ********************************************************************************
-                      00044 ; Macros
-                      00045 ; ********************************************************************************
+                      00037 ; ********************************************************************************
+                      00038 ; General Purpose Register Assignments
+                      00039 ; ********************************************************************************
+                      00040 
+  00000020            00041 Temp0                       equ 0x20;
+  00000021            00042 Temp1                       equ 0x21;
+  00000022            00043 Temp2                       equ 0x22;
+  00000023            00044 Temp3                       equ 0x23;
+  00000024            00045 Temp4                       equ 0x24;
                       00046 
-                      00047 
-                      00048 ifequal  macro  Var, Value, Label
-                      00049     movlw   Value
-                      00050     subwf   Var, 0                      ; check if Var-Value=0
-                      00051     bz      Label
-                      00052     endm
-                      00053 
-                      00054 ifnequal macro  Var, Value, Label
-                      00055     movlw   Value
-                      00056     subwf   Var, 0                      ; check if Var-Value!=0
-                      00057     bnz     Label
-                      00058     endm
-                      00059 
-                      00060 store macro Destination, Value
-                      00061     movlw   Value
-                      00062     movwf   Destination
-                      00063     endm
-                      00064     
-MPASM 5.65                          MAIN.ASM   2-1-2016  2:15:27         PAGE  2
+  00000025            00047 DelayCounter0               equ 0x25;
+  00000026            00048 DelayCounter1               equ 0x26;
+                      00049                     
+  00000030            00050 DisplayMode                 equ 0x30;
+  00000031            00051 OperatingMode               equ 0x31;
+  00000032            00052 PrevButtonState             equ 0x32;   
+  00000033            00053 ButtonPushed                equ 0x33;               
+                      00054 ; ********************************************************************************
+                      00055 ; Macros
+                      00056 ; ********************************************************************************
+                      00057 
+                      00058 
+                      00059 ifequalf  macro  Var, Value, Label
+                      00060     movlw   Value
+                      00061     subwf   Var, 0                      ; check if Var-Value=0
+                      00062     btfsc   STATUS, 2
+                      00063     call    Label
+                      00064     endm
+MPASM 5.65                          MAIN.ASM   2-2-2016  2:09:23         PAGE  2
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-                      00065 printline macro  TableName, LineNumber
-                      00066     movlw   LineNumber                 
-                      00067     call    WriteInstToLCD              
-                      00068     movlw   upper TableName             
-                      00069     movwf   TBLPTRU
-                      00070     movlw   high TableName
-                      00071     movwf   TBLPTRH
-                      00072     movlw   low TableName
-                      00073     movwf   TBLPTRL
-                      00074     ; Do 16 Loops to display all 16 characters in the TableName
-                      00075     call    Write16DataToLCD
-                      00076     endm
-                      00077 
-                      00078 printch  macro Char, Position, LineNumber 
-                      00079     movlw   LineNumber                 
-                      00080     call    WriteInstToLCD
-                      00081     movlw   Position
-                      00082     call    WriteInstToLCD
-                      00083     movlw   Char
-                      00084     call    WriteDataToLCD
+                      00065     
+                      00066 ifequalb  macro  Var, Value, Label
+                      00067     movlw   Value
+                      00068     subwf   Var, 0                      ; check if Var-Value=0
+                      00069     btfsc   STATUS, 2
+                      00070     goto    Label
+                      00071     endm
+                      00072 
+                      00073 ifnequalf macro  Var, Value, Label
+                      00074     movlw   Value
+                      00075     subwf   Var, 0                      ; check if Var-Value!=0
+                      00076     btfss   STATUS, 2
+                      00077     call    Label
+                      00078     endm
+                      00079 
+                      00080 ifnequalb macro  Var, Value, Label
+                      00081     movlw   Value
+                      00082     subwf   Var, 0                      ; check if Var-Value!=0
+                      00083     btfss   STATUS, 2
+                      00084     goto    Label
                       00085     endm
-                      00086  
-                      00087 ; ********************************************************************************
-                      00088 ; Variables for Assembler
-                      00089 ; ********************************************************************************
-  00989680            00090 Line0           set 10000000
-  00A7D8C0            00091 Line1           set 11000000
-                      00092 
-  00989680            00093 Char00          set 10000000
-  00989681            00094 Char01          set 10000001
-  0098968A            00095 Char02          set 10000010
-  0098968B            00096 Char03          set 10000011
-  009896E4            00097 Char04          set 10000100
-  009896E5            00098 Char05          set 10000101
-  009896EE            00099 Char06          set 10000110
-  009896EF            00100 Char07          set 10000111
-  00989A68            00101 Char08          set 10001000
-  00989A69            00102 Char09          set 10001001
-  00989A72            00103 Char0A          set 10001010
-  00989A73            00104 Char0B          set 10001011
-  00989ACC            00105 Char0C          set 10001100
-  00989ACD            00106 Char0D          set 10001101
-  00989AD6            00107 Char0E          set 10001110
-  00989AD7            00108 Char0F          set 10001111
-  00A7D8C0            00109 Char10          set 11000000
-  00A7D8C1            00110 Char11          set 11000001
-  00A7D8CA            00111 Char12          set 11000010
-  00A7D8CB            00112 Char13          set 11000011
-  00A7D924            00113 Char14          set 11000100
-  00A7D925            00114 Char15          set 11000101
-  00A7D92E            00115 Char16          set 11000110
-  00A7D92F            00116 Char17          set 11000111
-  00A7DCA8            00117 Char18          set 11001000
-  00A7DCA9            00118 Char19          set 11001001
-  00A7DCB2            00119 Char1A          set 11001010
-  00A7DCB3            00120 Char1B          set 11001011
-  00A7DD0C            00121 Char1C          set 11001100
-  00A7DD0D            00122 Char1D          set 11001101
-  00A7DD16            00123 Char1E          set 11001110
-  00A7DD17            00124 Char1F          set 11001111
-                      00125 ; ********************************************************************************
-                      00126 ; Vector Table
-                      00127 ; ********************************************************************************
-                      00128 
-                      00129     org     0x0000                  ; Reset vector
-000000 EF?? F???      00130     goto    Main
-                      00131     org     0x0008                  ; When Low Priority Interrupt occurs
-000008 EF?? F???      00132     goto    Interrupt
-                      00133     org     0x0018                  ; When High Priority Interrupt occurs    
-000018 0010           00134     retfie
-                      00135     
-                      00136 ; ********************************************************************************
-                      00137 ; Tables
-                      00138 ; ********************************************************************************
-MPASM 5.65                          MAIN.ASM   2-1-2016  2:15:27         PAGE  3
+                      00086     
+                      00087 store macro Destination, Value
+                      00088     movlw   Value
+                      00089     movwf   Destination
+                      00090     endm
+                      00091     
+                      00092 printline macro  TableName, LineNumber
+                      00093     movlw   LineNumber                 
+                      00094     call    WriteInstToLCD              
+                      00095     movlw   upper TableName             
+                      00096     movwf   TBLPTRU
+                      00097     movlw   high TableName
+                      00098     movwf   TBLPTRH
+                      00099     movlw   low TableName
+                      00100     movwf   TBLPTRL
+                      00101     ; Do 16 Loops to display all 16 characters in the TableName
+                      00102     call    Write16DataToLCD
+                      00103     endm
+                      00104 
+                      00105 printch  macro Char, Position, LineNumber 
+                      00106     movlw   LineNumber                 
+                      00107     call    WriteInstToLCD
+                      00108     movlw   Position
+                      00109     call    WriteInstToLCD
+                      00110     movlw   Char
+                      00111     call    WriteDataToLCD
+                      00112     endm
+                      00113  
+                      00114 ; ********************************************************************************
+                      00115 ; Variables for Assembler
+                      00116 ; ********************************************************************************
+  00989680            00117 Line0           set 10000000
+  00A7D8C0            00118 Line1           set 11000000
+                      00119 
+  00989680            00120 Char00          set 10000000
+  00989681            00121 Char01          set 10000001
+  0098968A            00122 Char02          set 10000010
+  0098968B            00123 Char03          set 10000011
+  009896E4            00124 Char04          set 10000100
+  009896E5            00125 Char05          set 10000101
+  009896EE            00126 Char06          set 10000110
+  009896EF            00127 Char07          set 10000111
+  00989A68            00128 Char08          set 10001000
+  00989A69            00129 Char09          set 10001001
+  00989A72            00130 Char0A          set 10001010
+  00989A73            00131 Char0B          set 10001011
+  00989ACC            00132 Char0C          set 10001100
+  00989ACD            00133 Char0D          set 10001101
+  00989AD6            00134 Char0E          set 10001110
+  00989AD7            00135 Char0F          set 10001111
+  00A7D8C0            00136 Char10          set 11000000
+  00A7D8C1            00137 Char11          set 11000001
+  00A7D8CA            00138 Char12          set 11000010
+MPASM 5.65                          MAIN.ASM   2-2-2016  2:09:23         PAGE  3
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-00001A 203C 2020 2020 00139 TableMenuTitle0             db  "<     START    >", 0
+  00A7D8CB            00139 Char13          set 11000011
+  00A7D924            00140 Char14          set 11000100
+  00A7D925            00141 Char15          set 11000101
+  00A7D92E            00142 Char16          set 11000110
+  00A7D92F            00143 Char17          set 11000111
+  00A7DCA8            00144 Char18          set 11001000
+  00A7DCA9            00145 Char19          set 11001001
+  00A7DCB2            00146 Char1A          set 11001010
+  00A7DCB3            00147 Char1B          set 11001011
+  00A7DD0C            00148 Char1C          set 11001100
+  00A7DD0D            00149 Char1D          set 11001101
+  00A7DD16            00150 Char1E          set 11001110
+  00A7DD17            00151 Char1F          set 11001111
+                      00152           
+                      00153 ; ********************************************************************************
+                      00154 ; Vector Table
+                      00155 ; ********************************************************************************
+                      00156 
+                      00157     org     0x0000                  ; Reset vector
+000000 EF?? F???      00158     goto    Main
+                      00159     org     0x0008                  ; When Low Priority Interrupt occurs
+000008 EF?? F???      00160     goto    Interrupt
+                      00161     org     0x0018                  ; When High Priority Interrupt occurs    
+000018 0010           00162     retfie
+                      00163     
+                      00164 ; ********************************************************************************
+                      00165 ; Tables
+                      00166 ; ********************************************************************************
+00001A 203C 2020 2020 00167 TableMenuTitle0             db  "<     START    >", 0
        5453 5241 2054 
        2020 3E20 0000 
-00002C 203C 2020 4144 00140 TableMenuTitle1             db  "<   DATA LOG   >", 0
+00002C 203C 2020 4144 00168 TableMenuTitle1             db  "<   DATA LOG   >", 0
        4154 4C20 474F 
        2020 3E20 0000 
-                      00141 
-00003E 4E49 5053 4345 00142 TableMenuTitle00            db  "INSPECTING.     ", 0
+                      00169 
+00003E 4E49 5053 4345 00170 TableMenuTitle00            db  "INSPECTING.     ", 0
        4954 474E 202E 
        2020 2020 0000 
-000050 4E49 5053 4345 00143 TableMenuTitle01            db  "INSPECTING..    ", 0
+000050 4E49 5053 4345 00171 TableMenuTitle01            db  "INSPECTING..    ", 0
        4954 474E 2E2E 
        2020 2020 0000 
-000062 4E49 5053 4345 00144 TableMenuTitle02            db  "INSPECTING...   ", 0
+000062 4E49 5053 4345 00172 TableMenuTitle02            db  "INSPECTING...   ", 0
        4954 474E 2E2E 
        202E 2020 0000 
-000074 4E49 5053 4345 00145 TableMenuTitle03            db  "INSPECTING....  ", 0
+000074 4E49 5053 4345 00173 TableMenuTitle03            db  "INSPECTING....  ", 0
        4954 474E 2E2E 
        2E2E 2020 0000 
-000086 4E49 5053 4345 00146 TableMenuTitle04            db  "INSPECTING..... ", 0
+000086 4E49 5053 4345 00174 TableMenuTitle04            db  "INSPECTING..... ", 0
        4954 474E 2E2E 
        2E2E 202E 0000 
-000098 4E49 5053 4345 00147 TableMenuTitle05            db  "INSPECTING......", 0
+000098 4E49 5053 4345 00175 TableMenuTitle05            db  "INSPECTING......", 0
        4954 474E 2E2E 
        2E2E 2E2E 0000 
-0000AA 2D2D 2D2D 4F43 00148 TableMenuTitle06            db  "----COMPLETE----", 0
+0000AA 2D2D 2D2D 4F43 00176 TableMenuTitle06            db  "----COMPLETE----", 0
        504D 454C 4554 
        2D2D 2D2D 0000 
-0000BC 313C 203E 2020 00149 TableMenuTitle07            db  "<1>    SAVE DATA", 0
+0000BC 313C 203E 2020 00177 TableMenuTitle07            db  "<1>    SAVE DATA", 0
        5320 5641 2045 
        4144 4154 0000 
-0000CE 323C 493E 534E 00150 TableMenuTitle08            db  "<2>INSPECT AGAIN", 0
+0000CE 323C 493E 534E 00178 TableMenuTitle08            db  "<2>INSPECT AGAIN", 0
        4550 5443 4120 
        4147 4E49 0000 
-                      00151 
-0000E0 313C 203E 2020 00152 TableMenuTitle10            db  "<1>      DATA #1", 0
+                      00179 
+0000E0 313C 203E 2020 00180 TableMenuTitle10            db  "<1>      DATA #1", 0
        2020 4420 5441 
        2041 3123 0000 
-0000F2 323C 203E 2020 00153 TableMenuTitle11            db  "<2>      DATA #2", 0
+0000F2 323C 203E 2020 00181 TableMenuTitle11            db  "<2>      DATA #2", 0
        2020 4420 5441 
        2041 3223 0000 
-000104 333C 203E 2020 00154 TableMenuTitle12            db  "<3>      DATA #3", 0
+000104 333C 203E 2020 00182 TableMenuTitle12            db  "<3>      DATA #3", 0
        2020 4420 5441 
        2041 3323 0000 
-                      00155 
-                      00156 
-                      00157     
-                      00158     
-                      00159 ; ********************************************************************************
-                      00160 ; Executable Code 
-                      00161 ; ********************************************************************************
-                      00162     
-000116                00163 Main
-                      00164     ; initialization
-000116 6A92           00165     clrf    TRISA                   ; sets all ports as output
-000118 6A93           00166     clrf    TRISB
-00011A 6A94           00167     clrf    TRISC
-00011C 6A95           00168     clrf    TRISD
-00011E 6A96           00169     clrf    TRISE
-                      00170     
-000120 6A80           00171     clrf    PORTA
-000122 6A81           00172     clrf    PORTB
-000124 6A82           00173     clrf    PORTC
-000126 6A83           00174     clrf    PORTD
-000128 6A84           00175     clrf    PORTE
-                      00176 
-                      00177     ; EEPROM initialization $%^&$%^&
-                      00178     
-                      00179     
-00012A EC?? F???      00180     call    InitializeLCD
-                      00181     
-00012E                00182 TopMenuOne
-00012E EC?? F???      00183     call    ClearLCD
-                      00184     printline TableMenuTitle0, B'10000000'
-MPASM 5.65                          MAIN.ASM   2-1-2016  2:15:27         PAGE  4
+                      00183 
+                      00184 
+MPASM 5.65                          MAIN.ASM   2-2-2016  2:09:23         PAGE  4
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-000132 0E80               M     movlw   B'10000000'                
-000134 EC?? F???          M     call    WriteInstToLCD              
-000138 0E??               M     movlw   upper TableMenuTitle0       
-00013A 6EF8               M     movwf   TBLPTRU
-00013C 0E??               M     movlw   high TableMenuTitle0
-00013E 6EF7               M     movwf   TBLPTRH
-000140 0E??               M     movlw   low TableMenuTitle0
-000142 6EF6               M     movwf   TBLPTRL
-                          M     ; Do 16 Loops to display all 16 characters in the TableName
-000144 EC?? F???          M     call    Write16DataToLCD
                       00185     
-000148                00186 Pause
-000148 D???           00187     bra     Pause
-                      00188     
-                      00189     
-                      00190 ; ********************************************************************************
-                      00191 ; LCD Functions 
-                      00192 ; ********************************************************************************
-                      00193 
-                      00194 ; InitializeLCD: set configuration for the LCD Display
-                      00195 ; Input: None                       Output: None
-00014A                00196 InitializeLCD
-00014A EC?? F???      00197     call        Delay5ms
-00014E EC?? F???      00198     call        Delay5ms
-000152 0E33           00199     movlw       B'00110011'         ; set for 8 bit twice
-000154 EC?? F???      00200     call        WriteInstToLCD
-000158 0E33           00201     movlw       B'00110011'         ; set for 8 bit
-00015A EC?? F???      00202     call        WriteInstToLCD
-00015E 0E33           00203     movlw       B'00110011'         ; set for 8 bit once again, then 4 bit
-000160 EC?? F???      00204     call        WriteInstToLCD
-000164 0E28           00205     movlw       B'00101000'         ; 4 bits, 2 lines, 5x8
-000166 EC?? F???      00206     call        WriteInstToLCD
-00016A 0E0C           00207     movlw       B'00001100'         ; display on/off
-00016C EC?? F???      00208     call        WriteInstToLCD
-000170 0E06           00209     movlw       B'00000110'         ; entry mode
-000172 EC?? F???      00210     call        WriteInstToLCD
-000176 0E01           00211     movlw       B'00000001'         ; clear ram
-000178 EC?? F???      00212     call        WriteInstToLCD
-00017C 0012           00213     return
-                      00214     
-                      00215     
-                      00216 ; WriteInstToLCD: sequences of command to modify the config of LCD
-                      00217 ; Input: W                         Output: None
-00017E                00218 WriteInstToLCD
-00017E 9483           00219     bcf     LCD_RS                  ; clear RS to enter instruction mode
-000180 6E20           00220     movwf   Temp0                   ; store into Temporary register
-000182 EC?? F???      00221     call    MoveMSB
-000186 8683           00222     bsf     LCD_E                   ; pulse LCD high
-000188 0000           00223     nop
-00018A 9683           00224     bcf     LCD_E                   ; pulse LCD low
-00018C 3820           00225     swapf   Temp0, W                ; swap nibbles
-00018E EC?? F???      00226     call    MoveMSB
-000192 8683           00227     bsf     LCD_E                   ; pulse LCD high
-000194 0000           00228     nop                             ; wait
-000196 9683           00229     bcf     LCD_E                   ; pulse LCD low
-000198 EC?? F???      00230     call    Delay5ms
-00019C 0012           00231     return
+                      00186     
+                      00187 ; ********************************************************************************
+                      00188 ; Executable Code 
+                      00189 ; ********************************************************************************
+                      00190     
+000116                00191 Main
+                      00192     ; initialization
+000116 6A92           00193     clrf        TRISA                   ; sets all ports as output
+000118 6A93           00194     clrf        TRISB
+00011A 6A94           00195     clrf        TRISC
+00011C 6A95           00196     clrf        TRISD
+00011E 6A96           00197     clrf        TRISE
+                      00198     
+000120 6A80           00199     clrf        PORTA
+000122 6A81           00200     clrf        PORTB
+000124 6A82           00201     clrf        PORTC
+000126 6A83           00202     clrf        PORTD
+000128 6A84           00203     clrf        PORTE
+                      00204     
+                      00205     store       TRISC, B'1111'
+00012A 0E0F               M     movlw   B'1111'
+00012C 6E94               M     movwf   TRISC
+                      00206     
+                      00207     ; EEPROM initialization $%^&$%^&
+                      00208     store       DisplayMode, B'1100'
+00012E 0E0C               M     movlw   B'1100'
+000130 6E30               M     movwf   DisplayMode
+000132 EC?? F???      00209     call        InitializeLCD
+000136 EC?? F???      00210     call        UpdateDisplay
+                      00211     
+Warning[207]: Found label after column 1. (MainLoop)
+00013A                00212     MainLoop
+                      00213         ; polls push buttons
+00013A B482           00214         btfsc   SELECT_B
+00013C EC?? F???      00215         call    SelectedPushed
+000140 B082           00216         btfsc   LEFT_B
+000142 EC?? F???      00217         call    LeftPushed
+000146 B282           00218         btfsc   RIGHT_B
+000148 EC?? F???      00219         call    RightPushed  
+00014C B682           00220         btfsc   QUIT_B
+00014E EC?? F???      00221         call    QuitPushed
+000152 B033           00222         btfsc   ButtonPushed, 0 
+000154 EC?? F???      00223         call    UpdateDisplay
+000158 9033           00224         bcf     ButtonPushed, 0
+00015A CF82 F032      00225         movff   PORTC, PrevButtonState
+00015E D???           00226         bra     MainLoop
+                      00227     
+                      00228 ; UpdateDisplay: Updates display when user of the machine has changed modes
+                      00229 ; Input: DisplayMode                Output: None
+000160                00230 UpdateDisplay 
+000160 EC?? F???      00231     call ClearLCD
                       00232     
-                      00233 ; WriteDataToLCD: sequences of command to display a character on LCD
-                      00234 ; Input: W                          Output: None
-00019E                00235 WriteDataToLCD
-00019E 8483           00236     bsf     LCD_RS                  ; set RS for data mode
-0001A0 6E20           00237     movwf   Temp0       ; store into temporary register
-0001A2 EC?? F???      00238     call    MoveMSB
-0001A6 8683           00239     bsf     LCD_E                   ; pulse LCD high
-0001A8 0000           00240     nop
-0001AA 9683           00241     bcf     LCD_E                   ; pulse LCD low
-0001AC 3820           00242     swapf   Temp0, W                ; swap nibbles
-0001AE EC?? F???      00243     call    MoveMSB
-0001B2 8683           00244     bsf     LCD_E                   ; pulse LCD high
-0001B4 0000           00245     nop                             ; wait
-0001B6 9683           00246     bcf     LCD_E                   ; pulse LCD low
-0001B8 EC?? F???      00247     call    Delay44us
-0001BC 0012           00248     return
-MPASM 5.65                          MAIN.ASM   2-1-2016  2:15:27         PAGE  5
+                      00233     ifequalf    DisplayMode, B'00', TopMenu0
+000164 0E00               M     movlw   B'00'
+000166 5C30               M     subwf   DisplayMode, 0              ; check if Var-Value=0
+000168 B4D8               M     btfsc   STATUS, 2
+00016A EC?? F???          M     call    TopMenu0
+                      00234     ifequalf    DisplayMode, B'01', TopMenu1
+00016E 0E01               M     movlw   B'01'
+000170 5C30               M     subwf   DisplayMode, 0              ; check if Var-Value=0
+000172 B4D8               M     btfsc   STATUS, 2
+000174 EC?? F???          M     call    TopMenu1
+                      00235     ifequalf    DisplayMode, B'10', SubMenu00
+000178 0E02               M     movlw   B'10'
+00017A 5C30               M     subwf   DisplayMode, 0              ; check if Var-Value=0
+00017C B4D8               M     btfsc   STATUS, 2
+00017E EC?? F???          M     call    SubMenu00
+                      00236     ifequalf    DisplayMode, B'11', SubMenu01
+000182 0E03               M     movlw   B'11'
+000184 5C30               M     subwf   DisplayMode, 0              ; check if Var-Value=0
+000186 B4D8               M     btfsc   STATUS, 2
+000188 EC?? F???          M     call    SubMenu01
+                      00237     ifequalf    DisplayMode, B'100', SubMenu02
+MPASM 5.65                          MAIN.ASM   2-2-2016  2:09:23         PAGE  5
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-                      00249     
-                      00250 ; Write16DataToLCD: Take 16 Character from the table, and display them one by
-                      00251 ;                   one, by invoking the subroutine WriteDataToLCD for 16 times
-                      00252 ; Input: tblrd (Table Pointer)      Output: None
-0001BE                00253 Write16DataToLCD
-0001BE 0008           00254     tblrd*                          ; read first character in table
-0001C0 50F5           00255     movf    TABLAT, W
+00018C 0E04               M     movlw   B'100'
+00018E 5C30               M     subwf   DisplayMode, 0              ; check if Var-Value=0
+000190 B4D8               M     btfsc   STATUS, 2
+000192 EC?? F???          M     call    SubMenu02
+                      00238     ifequalf    DisplayMode, B'101', SubMenu03
+000196 0E05               M     movlw   B'101'
+000198 5C30               M     subwf   DisplayMode, 0              ; check if Var-Value=0
+00019A B4D8               M     btfsc   STATUS, 2
+00019C EC?? F???          M     call    SubMenu03
+                      00239     ifequalf    DisplayMode, B'110', SubMenu04
+0001A0 0E06               M     movlw   B'110'
+0001A2 5C30               M     subwf   DisplayMode, 0              ; check if Var-Value=0
+0001A4 B4D8               M     btfsc   STATUS, 2
+0001A6 EC?? F???          M     call    SubMenu04
+                      00240     ifequalf    DisplayMode, B'111', SubMenu05
+0001AA 0E07               M     movlw   B'111'
+0001AC 5C30               M     subwf   DisplayMode, 0              ; check if Var-Value=0
+0001AE B4D8               M     btfsc   STATUS, 2
+0001B0 EC?? F???          M     call    SubMenu05
+                      00241     ifequalf    DisplayMode, B'1000', SubMenu06
+0001B4 0E08               M     movlw   B'1000'
+0001B6 5C30               M     subwf   DisplayMode, 0              ; check if Var-Value=0
+0001B8 B4D8               M     btfsc   STATUS, 2
+0001BA EC?? F???          M     call    SubMenu06
+                      00242     ifequalf    DisplayMode, B'1001', SubMenu07
+0001BE 0E09               M     movlw   B'1001'
+0001C0 5C30               M     subwf   DisplayMode, 0              ; check if Var-Value=0
+0001C2 B4D8               M     btfsc   STATUS, 2
+0001C4 EC?? F???          M     call    SubMenu07
+                      00243     ifequalf    DisplayMode, B'1010', SubMenu08
+0001C8 0E0A               M     movlw   B'1010'
+0001CA 5C30               M     subwf   DisplayMode, 0              ; check if Var-Value=0
+0001CC B4D8               M     btfsc   STATUS, 2
+0001CE EC?? F???          M     call    SubMenu08
+                      00244     ifequalf    DisplayMode, B'1011', SubMenu10
+0001D2 0E0B               M     movlw   B'1011'
+0001D4 5C30               M     subwf   DisplayMode, 0              ; check if Var-Value=0
+0001D6 B4D8               M     btfsc   STATUS, 2
+0001D8 EC?? F???          M     call    SubMenu10
+                      00245     ifequalf    DisplayMode, B'1100', SubMenu11
+0001DC 0E0C               M     movlw   B'1100'
+0001DE 5C30               M     subwf   DisplayMode, 0              ; check if Var-Value=0
+0001E0 B4D8               M     btfsc   STATUS, 2
+0001E2 EC?? F???          M     call    SubMenu11
+                      00246     ifequalf    DisplayMode, B'1101', SubMenu12
+0001E6 0E0D               M     movlw   B'1101'
+0001E8 5C30               M     subwf   DisplayMode, 0              ; check if Var-Value=0
+0001EA B4D8               M     btfsc   STATUS, 2
+0001EC EC?? F???          M     call    SubMenu12
+0001F0 0012           00247     return
+                      00248     
+0001F2                00249 TopMenu0 
+                      00250     printline   TableMenuTitle0, B'10000000'
+0001F2 0E80               M     movlw   B'10000000'                
+0001F4 EC?? F???          M     call    WriteInstToLCD              
+0001F8 0E??               M     movlw   upper TableMenuTitle0       
+0001FA 6EF8               M     movwf   TBLPTRU
+0001FC 0E??               M     movlw   high TableMenuTitle0
+0001FE 6EF7               M     movwf   TBLPTRH
+000200 0E??               M     movlw   low TableMenuTitle0
+000202 6EF6               M     movwf   TBLPTRL
+                          M     ; Do 16 Loops to display all 16 characters in the TableName
+000204 EC?? F???          M     call    Write16DataToLCD
+000208 0012           00251     return
+                      00252     
+00020A                00253 TopMenu1 
+                      00254     printline   TableMenuTitle1, B'10000000'
+00020A 0E80               M     movlw   B'10000000'                
+00020C EC?? F???          M     call    WriteInstToLCD              
+000210 0E??               M     movlw   upper TableMenuTitle1       
+000212 6EF8               M     movwf   TBLPTRU
+000214 0E??               M     movlw   high TableMenuTitle1
+000216 6EF7               M     movwf   TBLPTRH
+000218 0E??               M     movlw   low TableMenuTitle1
+MPASM 5.65                          MAIN.ASM   2-2-2016  2:09:23         PAGE  6
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+00021A 6EF6               M     movwf   TBLPTRL
+                          M     ; Do 16 Loops to display all 16 characters in the TableName
+00021C EC?? F???          M     call    Write16DataToLCD
+000220 0012           00255     return
+                      00256     
+000222                00257 SubMenu00
+                      00258     printline   TableMenuTitle00, B'10000000'
+000222 0E80               M     movlw   B'10000000'                
+000224 EC?? F???          M     call    WriteInstToLCD              
+000228 0E??               M     movlw   upper TableMenuTitle00      
+00022A 6EF8               M     movwf   TBLPTRU
+00022C 0E??               M     movlw   high TableMenuTitle00
+00022E 6EF7               M     movwf   TBLPTRH
+000230 0E??               M     movlw   low TableMenuTitle00
+000232 6EF6               M     movwf   TBLPTRL
+                          M     ; Do 16 Loops to display all 16 characters in the TableName
+000234 EC?? F???          M     call    Write16DataToLCD
+000238 0012           00259     return
+                      00260     
+00023A                00261 SubMenu01
+                      00262     printline   TableMenuTitle01, B'10000000'
+00023A 0E80               M     movlw   B'10000000'                
+00023C EC?? F???          M     call    WriteInstToLCD              
+000240 0E??               M     movlw   upper TableMenuTitle01      
+000242 6EF8               M     movwf   TBLPTRU
+000244 0E??               M     movlw   high TableMenuTitle01
+000246 6EF7               M     movwf   TBLPTRH
+000248 0E??               M     movlw   low TableMenuTitle01
+00024A 6EF6               M     movwf   TBLPTRL
+                          M     ; Do 16 Loops to display all 16 characters in the TableName
+00024C EC?? F???          M     call    Write16DataToLCD
+000250 0012           00263     return
+                      00264     
+000252                00265 SubMenu02
+                      00266     printline   TableMenuTitle02, B'10000000'
+000252 0E80               M     movlw   B'10000000'                
+000254 EC?? F???          M     call    WriteInstToLCD              
+000258 0E??               M     movlw   upper TableMenuTitle02      
+00025A 6EF8               M     movwf   TBLPTRU
+00025C 0E??               M     movlw   high TableMenuTitle02
+00025E 6EF7               M     movwf   TBLPTRH
+000260 0E??               M     movlw   low TableMenuTitle02
+000262 6EF6               M     movwf   TBLPTRL
+                          M     ; Do 16 Loops to display all 16 characters in the TableName
+000264 EC?? F???          M     call    Write16DataToLCD
+000268 0012           00267     return
+                      00268     
+00026A                00269 SubMenu03
+                      00270     printline   TableMenuTitle03, B'10000000'
+00026A 0E80               M     movlw   B'10000000'                
+00026C EC?? F???          M     call    WriteInstToLCD              
+000270 0E??               M     movlw   upper TableMenuTitle03      
+000272 6EF8               M     movwf   TBLPTRU
+000274 0E??               M     movlw   high TableMenuTitle03
+000276 6EF7               M     movwf   TBLPTRH
+000278 0E??               M     movlw   low TableMenuTitle03
+00027A 6EF6               M     movwf   TBLPTRL
+                          M     ; Do 16 Loops to display all 16 characters in the TableName
+00027C EC?? F???          M     call    Write16DataToLCD
+000280 0012           00271     return
+                      00272     
+000282                00273 SubMenu04
+                      00274     printline   TableMenuTitle04, B'10000000'
+000282 0E80               M     movlw   B'10000000'                
+000284 EC?? F???          M     call    WriteInstToLCD              
+000288 0E??               M     movlw   upper TableMenuTitle04      
+00028A 6EF8               M     movwf   TBLPTRU
+00028C 0E??               M     movlw   high TableMenuTitle04
+00028E 6EF7               M     movwf   TBLPTRH
+000290 0E??               M     movlw   low TableMenuTitle04
+000292 6EF6               M     movwf   TBLPTRL
+                          M     ; Do 16 Loops to display all 16 characters in the TableName
+000294 EC?? F???          M     call    Write16DataToLCD
+000298 0012           00275     return
+MPASM 5.65                          MAIN.ASM   2-2-2016  2:09:23         PAGE  7
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00276     
+00029A                00277 SubMenu05
+                      00278     printline   TableMenuTitle05, B'10000000'
+00029A 0E80               M     movlw   B'10000000'                
+00029C EC?? F???          M     call    WriteInstToLCD              
+0002A0 0E??               M     movlw   upper TableMenuTitle05      
+0002A2 6EF8               M     movwf   TBLPTRU
+0002A4 0E??               M     movlw   high TableMenuTitle05
+0002A6 6EF7               M     movwf   TBLPTRH
+0002A8 0E??               M     movlw   low TableMenuTitle05
+0002AA 6EF6               M     movwf   TBLPTRL
+                          M     ; Do 16 Loops to display all 16 characters in the TableName
+0002AC EC?? F???          M     call    Write16DataToLCD
+0002B0 0012           00279     return
+                      00280     
+0002B2                00281 SubMenu06
+                      00282     printline   TableMenuTitle06, B'10000000'
+0002B2 0E80               M     movlw   B'10000000'                
+0002B4 EC?? F???          M     call    WriteInstToLCD              
+0002B8 0E??               M     movlw   upper TableMenuTitle06      
+0002BA 6EF8               M     movwf   TBLPTRU
+0002BC 0E??               M     movlw   high TableMenuTitle06
+0002BE 6EF7               M     movwf   TBLPTRH
+0002C0 0E??               M     movlw   low TableMenuTitle06
+0002C2 6EF6               M     movwf   TBLPTRL
+                          M     ; Do 16 Loops to display all 16 characters in the TableName
+0002C4 EC?? F???          M     call    Write16DataToLCD
+0002C8 0012           00283     return
+                      00284     
+0002CA                00285 SubMenu07
+                      00286     printline   TableMenuTitle07, B'10000000'
+0002CA 0E80               M     movlw   B'10000000'                
+0002CC EC?? F???          M     call    WriteInstToLCD              
+0002D0 0E??               M     movlw   upper TableMenuTitle07      
+0002D2 6EF8               M     movwf   TBLPTRU
+0002D4 0E??               M     movlw   high TableMenuTitle07
+0002D6 6EF7               M     movwf   TBLPTRH
+0002D8 0E??               M     movlw   low TableMenuTitle07
+0002DA 6EF6               M     movwf   TBLPTRL
+                          M     ; Do 16 Loops to display all 16 characters in the TableName
+0002DC EC?? F???          M     call    Write16DataToLCD
+0002E0 0012           00287     return
+                      00288     
+0002E2                00289 SubMenu08
+                      00290     printline   TableMenuTitle08, B'10000000'
+0002E2 0E80               M     movlw   B'10000000'                
+0002E4 EC?? F???          M     call    WriteInstToLCD              
+0002E8 0E??               M     movlw   upper TableMenuTitle08      
+0002EA 6EF8               M     movwf   TBLPTRU
+0002EC 0E??               M     movlw   high TableMenuTitle08
+0002EE 6EF7               M     movwf   TBLPTRH
+0002F0 0E??               M     movlw   low TableMenuTitle08
+0002F2 6EF6               M     movwf   TBLPTRL
+                          M     ; Do 16 Loops to display all 16 characters in the TableName
+0002F4 EC?? F???          M     call    Write16DataToLCD
+0002F8 0012           00291     return
+                      00292     
+0002FA                00293 SubMenu10
+                      00294     printline   TableMenuTitle10, B'10000000'
+0002FA 0E80               M     movlw   B'10000000'                
+0002FC EC?? F???          M     call    WriteInstToLCD              
+000300 0E??               M     movlw   upper TableMenuTitle10      
+000302 6EF8               M     movwf   TBLPTRU
+000304 0E??               M     movlw   high TableMenuTitle10
+000306 6EF7               M     movwf   TBLPTRH
+000308 0E??               M     movlw   low TableMenuTitle10
+00030A 6EF6               M     movwf   TBLPTRL
+                          M     ; Do 16 Loops to display all 16 characters in the TableName
+00030C EC?? F???          M     call    Write16DataToLCD
+000310 0012           00295     return
+                      00296     
+000312                00297 SubMenu11
+                      00298     printline   TableMenuTitle11, B'10000000'
+000312 0E80               M     movlw   B'10000000'                
+MPASM 5.65                          MAIN.ASM   2-2-2016  2:09:23         PAGE  8
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+000314 EC?? F???          M     call    WriteInstToLCD              
+000318 0E??               M     movlw   upper TableMenuTitle11      
+00031A 6EF8               M     movwf   TBLPTRU
+00031C 0E??               M     movlw   high TableMenuTitle11
+00031E 6EF7               M     movwf   TBLPTRH
+000320 0E??               M     movlw   low TableMenuTitle11
+000322 6EF6               M     movwf   TBLPTRL
+                          M     ; Do 16 Loops to display all 16 characters in the TableName
+000324 EC?? F???          M     call    Write16DataToLCD
+000328 0012           00299     return
+                      00300     
+00032A                00301 SubMenu12
+                      00302     printline   TableMenuTitle12, B'10000000'
+00032A 0E80               M     movlw   B'10000000'                
+00032C EC?? F???          M     call    WriteInstToLCD              
+000330 0E??               M     movlw   upper TableMenuTitle12      
+000332 6EF8               M     movwf   TBLPTRU
+000334 0E??               M     movlw   high TableMenuTitle12
+000336 6EF7               M     movwf   TBLPTRH
+000338 0E??               M     movlw   low TableMenuTitle12
+00033A 6EF6               M     movwf   TBLPTRL
+                          M     ; Do 16 Loops to display all 16 characters in the TableName
+00033C EC?? F???          M     call    Write16DataToLCD
+000340 0012           00303     return
+                      00304     
+                      00305 ; QuitPushed
+                      00306 ; Input: PrevButtonState            Output: OperatingMode, DisplayMode, ButtonPushed
+000342                00307 QuitPushed
+000342 A632           00308     btfss   PrevButtonState, 3
+000344 0012           00309     return
+Warning[207]: Found label after column 1. (ButtonJustPressed)
+000346                00310     ButtonJustPressed
+000346 6A30           00311         clrf    DisplayMode
+000348 8033           00312         bsf     ButtonPushed, 0
+00034A 0012           00313         return
+                      00314         
+                      00315 ; RightPushed
+                      00316 ; Input: PrevButtonState            Output: OperatingMode, DisplayMode, ButtonPushed
+00034C                00317 RightPushed
+00034C A232           00318     btfss   PrevButtonState, 1
+00034E 0012           00319     return
+Warning[207]: Found label after column 1. (RightButtonJustPressed)
+000350                00320     RightButtonJustPressed
+                      00321         ifequalb DisplayMode, B'00', ScrollDownOne
+000350 0E00               M     movlw   B'00'
+000352 5C30               M     subwf   DisplayMode, 0              ; check if Var-Value=0
+000354 B4D8               M     btfsc   STATUS, 2
+000356 EF?? F???          M     goto    ScrollDownOne
+                      00322         ifequalb DisplayMode, B'1011', ScrollDownTwo
+00035A 0E0B               M     movlw   B'1011'
+00035C 5C30               M     subwf   DisplayMode, 0              ; check if Var-Value=0
+00035E B4D8               M     btfsc   STATUS, 2
+000360 EF?? F???          M     goto    ScrollDownTwo
+                      00323         ifequalb DisplayMode, B'1100', ScrollDownThree
+000364 0E0C               M     movlw   B'1100'
+000366 5C30               M     subwf   DisplayMode, 0              ; check if Var-Value=0
+000368 B4D8               M     btfsc   STATUS, 2
+00036A EF?? F???          M     goto    ScrollDownThree
+00036E 0012           00324         return
+Warning[207]: Found label after column 1. (EndIfScrollRight)
+000370                00325         EndIfScrollRight
+000370 8033           00326         bsf     ButtonPushed, 0
+000372 0012           00327         return
+                      00328         
+000374                00329 ScrollDownOne
+                      00330     store   DisplayMode, B'01'
+000374 0E01               M     movlw   B'01'
+000376 6E30               M     movwf   DisplayMode
+000378 D???           00331     bra     EndIfScrollRight 
+                      00332     
+00037A                00333 ScrollDownTwo
+00037A 8489           00334     bsf     LATA, 2
+                      00335     store   DisplayMode, B'1100'
+00037C 0E0C               M     movlw   B'1100'
+MPASM 5.65                          MAIN.ASM   2-2-2016  2:09:23         PAGE  9
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+00037E 6E30               M     movwf   DisplayMode
+000380 D???           00336     bra     EndIfScrollRight
+                      00337     
+000382                00338 ScrollDownThree
+000382 8689           00339     bsf     LATA, 3
+                      00340     store   DisplayMode, B'1101'
+000384 0E0D               M     movlw   B'1101'
+000386 6E30               M     movwf   DisplayMode
+000388 D???           00341     bra     EndIfScrollRight
+                      00342     
+                      00343 ; LeftPushed
+                      00344 ; Input: PrevButtonState            Output: OperatingMode, DisplayMode, ButtonPushed
+00038A                00345 LeftPushed
+00038A A032           00346     btfss   PrevButtonState, 0
+00038C 0012           00347     return
+Warning[207]: Found label after column 1. (LeftButtonJustPressed)
+00038E                00348     LeftButtonJustPressed
+                      00349         ifequalb DisplayMode, B'01', ScrollUpOne
+00038E 0E01               M     movlw   B'01'
+000390 5C30               M     subwf   DisplayMode, 0              ; check if Var-Value=0
+000392 B4D8               M     btfsc   STATUS, 2
+000394 EF?? F???          M     goto    ScrollUpOne
+                      00350         ifequalb DisplayMode, B'1100', ScrollUpTwo
+000398 0E0C               M     movlw   B'1100'
+00039A 5C30               M     subwf   DisplayMode, 0              ; check if Var-Value=0
+00039C B4D8               M     btfsc   STATUS, 2
+00039E EF?? F???          M     goto    ScrollUpTwo
+                      00351         ifequalb DisplayMode, B'1101', ScrollUpThree
+0003A2 0E0D               M     movlw   B'1101'
+0003A4 5C30               M     subwf   DisplayMode, 0              ; check if Var-Value=0
+0003A6 B4D8               M     btfsc   STATUS, 2
+0003A8 EF?? F???          M     goto    ScrollUpThree
+0003AC 0012           00352         return
+Warning[207]: Found label after column 1. (EndIfScrollLeft)
+0003AE                00353         EndIfScrollLeft
+0003AE 8033           00354         bsf     ButtonPushed, 0
+0003B0 0012           00355         return
+                      00356         
+0003B2                00357 ScrollUpOne
+                      00358     store   DisplayMode, B'00'
+0003B2 0E00               M     movlw   B'00'
+0003B4 6E30               M     movwf   DisplayMode
+0003B6 D???           00359     bra     EndIfScrollLeft
+                      00360     
+0003B8                00361 ScrollUpTwo
+0003B8 8089           00362     bsf         LATA, 0
+                      00363     store   DisplayMode, B'1011'
+0003BA 0E0B               M     movlw   B'1011'
+0003BC 6E30               M     movwf   DisplayMode
+0003BE D???           00364     bra     EndIfScrollLeft
+                      00365     
+0003C0                00366 ScrollUpThree
+0003C0 8289           00367     bsf         LATA, 1
+                      00368     store   DisplayMode, B'1100'
+0003C2 0E0C               M     movlw   B'1100'
+0003C4 6E30               M     movwf   DisplayMode
+0003C6 D???           00369     bra     EndIfScrollLeft
+                      00370     
+                      00371 ; SelectedPushed
+                      00372 ; Input: PrevButtonState            Output: OperatingMode, DisplayMode, ButtonPushed
+0003C8                00373 SelectedPushed
+0003C8 A432           00374     btfss   PrevButtonState, 2
+0003CA 0012           00375     return
+                      00376 
+Warning[207]: Found label after column 1. (SelectButtonJustPressed)
+0003CC                00377     SelectButtonJustPressed
+                      00378         ifequalb    DisplayMode, B'0', EnterOne
+0003CC 0E00               M     movlw   B'0'
+0003CE 5C30               M     subwf   DisplayMode, 0              ; check if Var-Value=0
+0003D0 B4D8               M     btfsc   STATUS, 2
+0003D2 EF?? F???          M     goto    EnterOne
+                      00379         ifequalb    DisplayMode, B'1', EnterTwo
+0003D6 0E01               M     movlw   B'1'
+0003D8 5C30               M     subwf   DisplayMode, 0              ; check if Var-Value=0
+MPASM 5.65                          MAIN.ASM   2-2-2016  2:09:23         PAGE 10
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0003DA B4D8               M     btfsc   STATUS, 2
+0003DC EF?? F???          M     goto    EnterTwo
+                      00380         ifequalb    DisplayMode, B'1011', EnterThree
+0003E0 0E0B               M     movlw   B'1011'
+0003E2 5C30               M     subwf   DisplayMode, 0              ; check if Var-Value=0
+0003E4 B4D8               M     btfsc   STATUS, 2
+0003E6 EF?? F???          M     goto    EnterThree
+                      00381         ifequalb    DisplayMode, B'1100', EnterFour
+0003EA 0E0C               M     movlw   B'1100'
+0003EC 5C30               M     subwf   DisplayMode, 0              ; check if Var-Value=0
+0003EE B4D8               M     btfsc   STATUS, 2
+0003F0 EF?? F???          M     goto    EnterFour
+                      00382         ifequalb    DisplayMode, B'1101', EnterFive
+0003F4 0E0D               M     movlw   B'1101'
+0003F6 5C30               M     subwf   DisplayMode, 0              ; check if Var-Value=0
+0003F8 B4D8               M     btfsc   STATUS, 2
+0003FA EF?? F???          M     goto    EnterFive
+0003FE 0012           00383         return
+Warning[207]: Found label after column 1. (EndIfEnter)
+000400                00384         EndIfEnter
+000400 8033           00385         bsf         ButtonPushed, 0
+000402 0012           00386         return
+                      00387         
+000404                00388 EnterOne
+                      00389     store   DisplayMode, B'10'
+000404 0E02               M     movlw   B'10'
+000406 6E30               M     movwf   DisplayMode
+000408 D???           00390     bra     EndIfEnter
+                      00391 
+00040A                00392 EnterTwo
+                      00393     store   DisplayMode, B'1011'
+00040A 0E0B               M     movlw   B'1011'
+00040C 6E30               M     movwf   DisplayMode
+00040E D???           00394     bra     EndIfEnter
+                      00395     
+000410                00396 EnterThree
+000410 D???           00397     bra     EndIfEnter
+                      00398     
+000412                00399 EnterFour
+000412 D???           00400     bra     EndIfEnter
+                      00401     
+000414                00402 EnterFive
+000414 D???           00403     bra     EndIfEnter
+                      00404     
+                      00405 
+                      00406     
+                      00407     
+                      00408     
+                      00409     
+                      00410     
+                      00411 ; ********************************************************************************
+                      00412 ; LCD Functions 
+                      00413 ; ********************************************************************************
+                      00414 
+                      00415 ; InitializeLCD: set configuration for the LCD Display
+                      00416 ; Input: None                       Output: None
+000416                00417 InitializeLCD
+000416 EC?? F???      00418     call        Delay5ms
+00041A EC?? F???      00419     call        Delay5ms
+00041E 0E33           00420     movlw       B'00110011'         ; set for 8 bit twice
+000420 EC?? F???      00421     call        WriteInstToLCD
+000424 0E33           00422     movlw       B'00110011'         ; set for 8 bit
+000426 EC?? F???      00423     call        WriteInstToLCD
+00042A 0E33           00424     movlw       B'00110011'         ; set for 8 bit once again, then 4 bit
+00042C EC?? F???      00425     call        WriteInstToLCD
+000430 0E28           00426     movlw       B'00101000'         ; 4 bits, 2 lines, 5x8
+000432 EC?? F???      00427     call        WriteInstToLCD
+000436 0E0C           00428     movlw       B'00001100'         ; display on/off
+000438 EC?? F???      00429     call        WriteInstToLCD
+00043C 0E06           00430     movlw       B'00000110'         ; entry mode
+00043E EC?? F???      00431     call        WriteInstToLCD
+000442 0E01           00432     movlw       B'00000001'         ; clear ram
+000444 EC?? F???      00433     call        WriteInstToLCD
+000448 0012           00434     return
+MPASM 5.65                          MAIN.ASM   2-2-2016  2:09:23         PAGE 11
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00435     
+                      00436     
+                      00437 ; WriteInstToLCD: sequences of command to modify the config of LCD
+                      00438 ; Input: W                         Output: None
+00044A                00439 WriteInstToLCD
+00044A 9483           00440     bcf     LCD_RS                  ; clear RS to enter instruction mode
+00044C 6E20           00441     movwf   Temp0                   ; store into Temporary register
+00044E EC?? F???      00442     call    MoveMSB
+000452 8683           00443     bsf     LCD_E                   ; pulse LCD high
+000454 0000           00444     nop
+000456 9683           00445     bcf     LCD_E                   ; pulse LCD low
+000458 3820           00446     swapf   Temp0, W                ; swap nibbles
+00045A EC?? F???      00447     call    MoveMSB
+00045E 8683           00448     bsf     LCD_E                   ; pulse LCD high
+000460 0000           00449     nop                             ; wait
+000462 9683           00450     bcf     LCD_E                   ; pulse LCD low
+000464 EC?? F???      00451     call    Delay5ms
+000468 0012           00452     return
+                      00453     
+                      00454 ; WriteDataToLCD: sequences of command to display a character on LCD
+                      00455 ; Input: W                          Output: None
+00046A                00456 WriteDataToLCD
+00046A 8483           00457     bsf     LCD_RS                  ; set RS for data mode
+00046C 6E20           00458     movwf   Temp0                   ; store into temporary register
+00046E EC?? F???      00459     call    MoveMSB
+000472 8683           00460     bsf     LCD_E                   ; pulse LCD high
+000474 0000           00461     nop
+000476 9683           00462     bcf     LCD_E                   ; pulse LCD low
+000478 3820           00463     swapf   Temp0, W                ; swap nibbles
+00047A EC?? F???      00464     call    MoveMSB
+00047E 8683           00465     bsf     LCD_E                   ; pulse LCD high
+000480 0000           00466     nop                             ; wait
+000482 9683           00467     bcf     LCD_E                   ; pulse LCD low
+000484 EC?? F???      00468     call    Delay44us
+000488 0012           00469     return
+                      00470     
+                      00471 ; Write16DataToLCD: Take 16 Character from the table, and display them one by
+                      00472 ;                   one, by invoking the subroutine WriteDataToLCD for 16 times
+                      00473 ; Input: tblrd (Table Pointer)      Output: None
+00048A                00474 Write16DataToLCD
+00048A 0008           00475     tblrd*                          ; read first character in table
+00048C 50F5           00476     movf    TABLAT, W
 Warning[207]: Found label after column 1. (Loop16LCD)
-0001C2                00256     Loop16LCD
-0001C2 EC?? F???      00257         call    WriteDataToLCD
-0001C6 000B           00258         tblrd+*                     ; increment pointer then read
-0001C8 50F5           00259         movf    TABLAT, W
-0001CA E1??           00260         bnz     Loop16LCD
-0001CC 0012           00261     return
-                      00262     
-                      00263 ; MoveMSB: Move the upper 4 bits of W into PORTD without affecting current
-                      00264 ;          values in it
-                      00265 ; Input: W                       Output: None
-0001CE                00266 MoveMSB
-0001CE CF83 F021      00267     movff   PORTD, Temp1
-0001D2 0BF0           00268     andlw   0xF0
-0001D4 1221           00269     iorwf   Temp1,F                 ; OR operation and store it in File Reg
-0001D6 090F           00270     iorlw   0x0F
-0001D8 1621           00271     andwf   Temp1,F                 ; AND operation and store it in File Reg
-0001DA C021 FF83      00272     movff   Temp1, PORTD
-0001DE 0012           00273     return
-                      00274 
-                      00275 ; ClearLCD: Clear the entire LCD
-                      00276 ; Input: None                   Output: None
-0001E0                00277 ClearLCD
-0001E0 0EC0           00278     movlw   B'11000000'             ; 2nd line
-0001E2 EC?? F???      00279     call    WriteInstToLCD
-0001E6 0E01           00280     movlw   B'00000001'             ; clear 2nd line
-0001E8 EC?? F???      00281     call    WriteInstToLCD
-0001EC 0E80           00282     movlw   B'10000000'             ; 1st line
-0001EE EC?? F???      00283     call    WriteInstToLCD
-0001F2 0E01           00284     movlw   B'00000001'             ; clear 1st line
-0001F4 EC?? F???      00285     call    WriteInstToLCD
-0001F8 0012           00286     return
-                      00287     
-0001FA                00288 Delay5ms
-                      00289     store   DelayCounter1, d'110'
-0001FA 0E6E               M     movlw   d'110'
-0001FC 6E26               M     movwf   DelayCounter1
+00048E                00477     Loop16LCD
+00048E EC?? F???      00478         call    WriteDataToLCD
+000492 000B           00479         tblrd+*                     ; increment pointer then read
+000494 50F5           00480         movf    TABLAT, W
+000496 E1??           00481         bnz     Loop16LCD
+000498 0012           00482     return
+                      00483     
+                      00484 ; MoveMSB: Move the upper 4 bits of W into PORTD without affecting current
+                      00485 ;          values in it
+                      00486 ; Input: W                       Output: None
+00049A                00487 MoveMSB
+00049A CF83 F021      00488     movff   PORTD, Temp1
+00049E 0BF0           00489     andlw   0xF0
+0004A0 1221           00490     iorwf   Temp1,F                 ; OR operation and store it in File Reg
+0004A2 090F           00491     iorlw   0x0F
+0004A4 1621           00492     andwf   Temp1,F                 ; AND operation and store it in File Reg
+0004A6 C021 FF83      00493     movff   Temp1, PORTD
+0004AA 0012           00494     return
+                      00495 
+                      00496 ; ClearLCD: Clear the entire LCD
+                      00497 ; Input: None                   Output: None
+0004AC                00498 ClearLCD
+0004AC 0EC0           00499     movlw   B'11000000'             ; 2nd line
+0004AE EC?? F???      00500     call    WriteInstToLCD
+0004B2 0E01           00501     movlw   B'00000001'             ; clear 2nd line
+0004B4 EC?? F???      00502     call    WriteInstToLCD
+0004B8 0E80           00503     movlw   B'10000000'             ; 1st line
+0004BA EC?? F???      00504     call    WriteInstToLCD
+0004BE 0E01           00505     movlw   B'00000001'             ; clear 1st line
+0004C0 EC?? F???      00506     call    WriteInstToLCD
+0004C4 0012           00507     return
+MPASM 5.65                          MAIN.ASM   2-2-2016  2:09:23         PAGE 12
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00508     
+0004C6                00509 Delay5ms
+                      00510     store   DelayCounter1, d'110'
+0004C6 0E6E               M     movlw   d'110'
+0004C8 6E26               M     movwf   DelayCounter1
 Warning[207]: Found label after column 1. (Delay5msLoop)
-0001FE                00290     Delay5msLoop
-0001FE EC?? F???      00291         call    Delay44us
-000202 2E26           00292         decfsz  DelayCounter1, 1
-000204 D???           00293         bra     Delay5msLoop
-000206 0012           00294     return
-                      00295     
-000208                00296 Delay44us
-                      00297     store   DelayCounter0, 0x23
-000208 0E23               M     movlw   0x23
-00020A 6E25               M     movwf   DelayCounter0
+0004CA                00511     Delay5msLoop
+0004CA EC?? F???      00512         call    Delay44us
+0004CE 2E26           00513         decfsz  DelayCounter1, 1
+0004D0 D???           00514         bra     Delay5msLoop
+0004D2 0012           00515     return
+                      00516     
+0004D4                00517 Delay44us
+                      00518     store   DelayCounter0, 0x23
+0004D4 0E23               M     movlw   0x23
+0004D6 6E25               M     movwf   DelayCounter0
 Warning[207]: Found label after column 1. (Delay44usLoop)
-00020C                00298     Delay44usLoop
-00020C 2E25           00299         decfsz  DelayCounter0, 1
-00020E D???           00300         bra     Delay44usLoop
-000210 0012           00301     return
-                      00302     
-000212                00303 Interrupt
-000212 D???           00304     bra     Interrupt
-                      00305     
-Warning[205]: Found directive in column 1. (end)
-                      00306 end
+0004D8                00519     Delay44usLoop
+0004D8 2E25           00520         decfsz  DelayCounter0, 1
+0004DA D???           00521         bra     Delay44usLoop
+0004DC 0012           00522     return
+                      00523     
+0004DE                00524 Interrupt
+0004DE D???           00525     bra     Interrupt
+                      00526     
+0004E0                00527 PowerOff    
+                      00528     end
 
 Errors   :     0
-Warnings :     4 reported,     0 suppressed
+Warnings :    11 reported,     0 suppressed
 Messages :     0 reported,     0 suppressed
 
 
