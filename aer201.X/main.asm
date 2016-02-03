@@ -56,28 +56,28 @@ ButtonPushed		    equ 0x33;
 ; ********************************************************************************
 
 
-ifequalf  macro  Var, Value, Label
+ifequalf  macro  Var, Value, Label	; if Label ends with return instruction
     movlw   Value
     subwf   Var, 0                      ; check if Var-Value=0
     btfsc   STATUS, 2
     call    Label
     endm
     
-ifequalb  macro  Var, Value, Label
+ifequalb  macro  Var, Value, Label	; if Label ends with branch instruction
     movlw   Value
     subwf   Var, 0                      ; check if Var-Value=0
     btfsc   STATUS, 2
     goto    Label
     endm
 
-ifnequalf macro  Var, Value, Label
+ifnequalf macro  Var, Value, Label	; if Label ends with return instruction
     movlw   Value
     subwf   Var, 0                      ; check if Var-Value!=0
     btfss   STATUS, 2
     call    Label
     endm
 
-ifnequalb macro  Var, Value, Label
+ifnequalb macro  Var, Value, Label	; if Label ends with branch instruction
     movlw   Value
     subwf   Var, 0                      ; check if Var-Value!=0
     btfss   STATUS, 2
@@ -111,44 +111,6 @@ printch  macro Char, Position, LineNumber
     call    WriteDataToLCD
     endm
  
-; ********************************************************************************
-; Variables for Assembler
-; ********************************************************************************
-Line0           set 10000000
-Line1           set 11000000
-
-Char00          set 10000000
-Char01          set 10000001
-Char02          set 10000010
-Char03          set 10000011
-Char04          set 10000100
-Char05          set 10000101
-Char06          set 10000110
-Char07          set 10000111
-Char08          set 10001000
-Char09          set 10001001
-Char0A          set 10001010
-Char0B          set 10001011
-Char0C          set 10001100
-Char0D          set 10001101
-Char0E          set 10001110
-Char0F          set 10001111
-Char10          set 11000000
-Char11          set 11000001
-Char12          set 11000010
-Char13          set 11000011
-Char14          set 11000100
-Char15          set 11000101
-Char16          set 11000110
-Char17          set 11000111
-Char18          set 11001000
-Char19          set 11001001
-Char1A          set 11001010
-Char1B          set 11001011
-Char1C          set 11001100
-Char1D          set 11001101
-Char1E          set 11001110
-Char1F          set 11001111
 	  
 ; ********************************************************************************
 ; Vector Table
@@ -164,8 +126,10 @@ Char1F          set 11001111
 ; ********************************************************************************
 ; Tables
 ; ********************************************************************************
-TableMenuTitle0             db  "<     START    >", 0
+TableMenuTitle0             db  "      START    >", 0
 TableMenuTitle1             db  "<   DATA LOG   >", 0
+TableMenuTitle2             db  "< RESET MEMORY >", 0
+TableMenuTitle3             db  "< SET DATE/TIME ", 0
 
 TableMenuTitle00            db  "INSPECTING.     ", 0
 TableMenuTitle01            db  "INSPECTING..    ", 0
@@ -174,12 +138,14 @@ TableMenuTitle03            db  "INSPECTING....  ", 0
 TableMenuTitle04            db  "INSPECTING..... ", 0
 TableMenuTitle05            db  "INSPECTING......", 0
 TableMenuTitle06            db  "----COMPLETE----", 0
-TableMenuTitle07            db  "<1>    SAVE DATA", 0
-TableMenuTitle08            db  "<2>INSPECT AGAIN", 0
+TableMenuTitle07            db  "   SAVE DATA   >", 0
+TableMenuTitle08            db  "<INSPECT AGAIN  ", 0
 
-TableMenuTitle10            db  "<1>      DATA #1", 0
-TableMenuTitle11            db  "<2>      DATA #2", 0
-TableMenuTitle12            db  "<3>      DATA #3", 0
+TableMenuTitle10            db  "     DATA #1   >", 0
+TableMenuTitle11            db  "<    DATA #2   >", 0
+TableMenuTitle12            db  "<    DATA #3    ", 0
+	    
+TableMenuTitle20	    db	" ARE YOU SURE?  ", 0
 
 
     
@@ -223,6 +189,7 @@ Main
 	call	UpdateDisplay
 	bcf	ButtonPushed, 0
 	movff	PORTC, PrevButtonState
+	movff	PrevButtonState, LATB
 	bra	MainLoop
     
 ; UpdateDisplay: Updates display when user of the machine has changed modes
@@ -232,18 +199,21 @@ UpdateDisplay
     
     ifequalf	DisplayMode, B'00', TopMenu0
     ifequalf	DisplayMode, B'01', TopMenu1
-    ifequalf	DisplayMode, B'10', SubMenu00
-    ifequalf	DisplayMode, B'11', SubMenu01
-    ifequalf	DisplayMode, B'100', SubMenu02
-    ifequalf	DisplayMode, B'101', SubMenu03
-    ifequalf	DisplayMode, B'110', SubMenu04
-    ifequalf	DisplayMode, B'111', SubMenu05
-    ifequalf	DisplayMode, B'1000', SubMenu06
-    ifequalf	DisplayMode, B'1001', SubMenu07
-    ifequalf	DisplayMode, B'1010', SubMenu08
-    ifequalf	DisplayMode, B'1011', SubMenu10
-    ifequalf	DisplayMode, B'1100', SubMenu11
+    ifequalf	DisplayMode, B'10', TopMenu2
+    ifequalf	DisplayMode, B'11', TopMenu3
+    ifequalf	DisplayMode, B'100', SubMenu00
+    ifequalf	DisplayMode, B'1000', SubMenu01
+    ifequalf	DisplayMode, B'1100', SubMenu02
+    ifequalf	DisplayMode, B'10000', SubMenu03
+    ifequalf	DisplayMode, B'10100', SubMenu04
+    ifequalf	DisplayMode, B'11000', SubMenu05
+    ifequalf	DisplayMode, B'11100', SubMenu06
+    ifequalf	DisplayMode, B'100000', SubMenu07 
+    ifequalf	DisplayMode, B'100100', SubMenu08 
+    ifequalf	DisplayMode, B'101', SubMenu10
+    ifequalf	DisplayMode, B'1001', SubMenu11
     ifequalf	DisplayMode, B'1101', SubMenu12
+    ifequalf	DisplayMode, B'0110', SubMenu20
     return
     
 TopMenu0 
@@ -252,6 +222,14 @@ TopMenu0
     
 TopMenu1 
     printline	TableMenuTitle1, B'10000000'
+    return
+    
+TopMenu2 
+    printline	TableMenuTitle2, B'10000000'
+    return
+    
+TopMenu3 
+    printline	TableMenuTitle3, B'10000000'
     return
     
 SubMenu00
@@ -302,10 +280,14 @@ SubMenu12
     printline	TableMenuTitle12, B'10000000'
     return
     
+SubMenu20
+    printline	TableMenuTitle20, B'10000000'
+    return
+    
 ; QuitPushed
 ; Input: PrevButtonState	    Output: OperatingMode, DisplayMode, ButtonPushed
 QuitPushed
-    btfss   PrevButtonState, 3
+    btfsc   PrevButtonState, 3
     return
     ButtonJustPressed
 	clrf	DisplayMode
@@ -315,12 +297,15 @@ QuitPushed
 ; RightPushed
 ; Input: PrevButtonState	    Output: OperatingMode, DisplayMode, ButtonPushed
 RightPushed
-    btfss   PrevButtonState, 1
+    btfsc   PrevButtonState, 1
     return
     RightButtonJustPressed
 	ifequalb DisplayMode, B'00', ScrollDownOne
-	ifequalb DisplayMode, B'1011', ScrollDownTwo
-	ifequalb DisplayMode, B'1100', ScrollDownThree
+	ifequalb DisplayMode, B'01', ScrollDownTwo
+	ifequalb DisplayMode, B'10', ScrollDownThree
+	ifequalb DisplayMode, B'10000', ScrollDownFour
+	ifequalb DisplayMode, B'0101', ScrollDownFive
+	ifequalb DisplayMode, B'1001', ScrollDownSix
 	return
 	EndIfScrollRight
 	bsf	ButtonPushed, 0
@@ -331,24 +316,37 @@ ScrollDownOne
     bra	    EndIfScrollRight 
     
 ScrollDownTwo
-    bsf	    LATA, 2
-    store   DisplayMode, B'1100'
+    store   DisplayMode, B'10'
     bra	    EndIfScrollRight
     
 ScrollDownThree
-    bsf	    LATA, 3
+    store   DisplayMode, B'11'
+    bra	    EndIfScrollRight
+    
+ScrollDownFour
+    store   DisplayMode, B'10000'
+    bra	    EndIfScrollRight 
+    
+ScrollDownFive
+    store   DisplayMode, B'1001'
+    bra	    EndIfScrollRight
+    
+ScrollDownSix
     store   DisplayMode, B'1101'
     bra	    EndIfScrollRight
     
 ; LeftPushed
 ; Input: PrevButtonState	    Output: OperatingMode, DisplayMode, ButtonPushed
 LeftPushed
-    btfss   PrevButtonState, 0
+    btfsc   PrevButtonState, 0
     return
     LeftButtonJustPressed
 	ifequalb DisplayMode, B'01', ScrollUpOne
-	ifequalb DisplayMode, B'1100', ScrollUpTwo
-	ifequalb DisplayMode, B'1101', ScrollUpThree
+	ifequalb DisplayMode, B'10', ScrollUpTwo
+	ifequalb DisplayMode, B'11', ScrollUpThree
+	ifequalb DisplayMode, B'11000', ScrollUpFour
+	ifequalb DisplayMode, B'1001', ScrollUpFive
+	ifequalb DisplayMode, B'1101', ScrollDownSix
 	return
 	EndIfScrollLeft
 	bsf	ButtonPushed, 0
@@ -359,19 +357,17 @@ ScrollUpOne
     bra	    EndIfScrollLeft
     
 ScrollUpTwo
-    bsf		LATA, 0
-    store   DisplayMode, B'1011'
+    store   DisplayMode, B'1'
     bra	    EndIfScrollLeft
     
 ScrollUpThree
-    bsf		LATA, 1
-    store   DisplayMode, B'1100'
+    store   DisplayMode, B'10'
     bra	    EndIfScrollLeft
     
 ; SelectedPushed
 ; Input: PrevButtonState	    Output: OperatingMode, DisplayMode, ButtonPushed
 SelectedPushed
-    btfss   PrevButtonState, 2
+    btfsc   PrevButtonState, 2
     return
 
     SelectButtonJustPressed
