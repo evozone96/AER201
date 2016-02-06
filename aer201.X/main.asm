@@ -27,11 +27,7 @@
 ; ********************************************************************************
 #define LCD_RS	    PORTD, 2	
 #define LCD_E	    PORTD, 3
-    
-#define	LEFT_B	    PORTC, 0
-#define	RIGHT_B	    PORTC, 1
-#define SELECT_B    PORTC, 2
-#define QUIT_B	    PORTC, 3
+
 
 
 ; ********************************************************************************
@@ -47,10 +43,11 @@ Temp4			    equ 0x24;
 DelayCounter0		    equ 0x25;
 DelayCounter1		    equ 0x26;
 		    
-DisplayMode		    equ 0x30;
+MenuLocation		    equ 0x30;
 OperatingMode		    equ 0x31;
-PrevButtonState		    equ 0x32;	
-ButtonPushed		    equ 0x33;		    
+CurrButtonState		    equ	0x32;
+PrevButtonState		    equ 0x33;	
+ButtonPushed		    equ 0x34;		    
 ; ********************************************************************************
 ; Macros
 ; ********************************************************************************
@@ -147,7 +144,10 @@ TableMenuTitle12            db  "<    DATA #3    ", 0
 	    
 TableMenuTitle20	    db	" ARE YOU SURE?  ", 0
 
-
+TableMenuTitle100	    db	"Barrel Number   ", 0
+TableMenuTitle101	    db	"Barrel Distance ", 0
+TableMenuTitle102	    db	"Barrel Height   ", 0
+TableMenuTitle103	    db	"Water Level	 ", 0
     
     
 ; ********************************************************************************
@@ -168,52 +168,71 @@ Main
     clrf	PORTD
     clrf	PORTE
     
-    store	TRISC, B'1111'
+    store	TRISC, B'11111111'
     
     ; EEPROM initialization $%^&$%^&
-    store	DisplayMode, B'1100'
+    store	MenuLocation, B'11111100'
     call	InitializeLCD
     call	UpdateDisplay
     
     MainLoop
+	call Delay5ms
+	movff	PrevButtonState, LATB
+	
 	; polls push buttons
-	btfsc	SELECT_B
+	movff	PORTC, CurrButtonState
+	btfsc	CurrButtonState, 2
 	call	SelectedPushed
-	btfsc	LEFT_B
+	btfsc	CurrButtonState, 0
 	call	LeftPushed
-	btfsc	RIGHT_B
+	btfsc	CurrButtonState, 1
 	call	RightPushed  
-	btfsc	QUIT_B
+	btfsc	CurrButtonState, 3
 	call	QuitPushed
 	btfsc	ButtonPushed, 0 
 	call	UpdateDisplay
 	bcf	ButtonPushed, 0
-	movff	PORTC, PrevButtonState
-	movff	PrevButtonState, LATB
+	
+	
+	movff	CurrButtonState, PrevButtonState
 	bra	MainLoop
     
 ; UpdateDisplay: Updates display when user of the machine has changed modes
-; Input: DisplayMode		    Output: None
+; Input: MenuLocation		    Output: None
 UpdateDisplay 
+    
     call ClearLCD
     
-    ifequalf	DisplayMode, B'00', TopMenu0
-    ifequalf	DisplayMode, B'01', TopMenu1
-    ifequalf	DisplayMode, B'10', TopMenu2
-    ifequalf	DisplayMode, B'11', TopMenu3
-    ifequalf	DisplayMode, B'100', SubMenu00
-    ifequalf	DisplayMode, B'1000', SubMenu01
-    ifequalf	DisplayMode, B'1100', SubMenu02
-    ifequalf	DisplayMode, B'10000', SubMenu03
-    ifequalf	DisplayMode, B'10100', SubMenu04
-    ifequalf	DisplayMode, B'11000', SubMenu05
-    ifequalf	DisplayMode, B'11100', SubMenu06
-    ifequalf	DisplayMode, B'100000', SubMenu07 
-    ifequalf	DisplayMode, B'100100', SubMenu08 
-    ifequalf	DisplayMode, B'101', SubMenu10
-    ifequalf	DisplayMode, B'1001', SubMenu11
-    ifequalf	DisplayMode, B'1101', SubMenu12
-    ifequalf	DisplayMode, B'0110', SubMenu20
+    ifequalf	MenuLocation, B'11111100', TopMenu0
+    ifequalf	MenuLocation, B'11111101', TopMenu1
+    ifequalf	MenuLocation, B'11111110', TopMenu2
+    ifequalf	MenuLocation, B'11111111', TopMenu3
+    ifequalf	MenuLocation, B'11000000', SubMenu00
+    ifequalf	MenuLocation, B'11000001', SubMenu01
+    ifequalf	MenuLocation, B'11000010', SubMenu02
+    ifequalf	MenuLocation, B'11000011', SubMenu03
+    ifequalf	MenuLocation, B'11000100', SubMenu04
+    ifequalf	MenuLocation, B'11000101', SubMenu05
+    ifequalf	MenuLocation, B'11000110', SubMenu06
+    ifequalf	MenuLocation, B'11000111', SubMenu07 
+    ifequalf	MenuLocation, B'11001000', SubMenu08 
+    ifequalf	MenuLocation, B'11010000', SubMenu10
+    ifequalf	MenuLocation, B'11010001', SubMenu11
+    ifequalf	MenuLocation, B'11010010', SubMenu12
+    ifequalf	MenuLocation, B'11100000', SubMenu20
+    ifequalf	MenuLocation, B'11110000', SubMenu20
+    ifequalf	MenuLocation, B'01000000', SubMenu100
+    ifequalf	MenuLocation, B'01000001', SubMenu101
+    ifequalf	MenuLocation, B'01000010', SubMenu102
+    ifequalf	MenuLocation, B'01000011', SubMenu103
+    ifequalf	MenuLocation, B'01000100', SubMenu100
+    ifequalf	MenuLocation, B'01000101', SubMenu101
+    ifequalf	MenuLocation, B'01000110', SubMenu102
+    ifequalf	MenuLocation, B'01000111', SubMenu103
+    ifequalf	MenuLocation, B'01001000', SubMenu100
+    ifequalf	MenuLocation, B'01001001', SubMenu101
+    ifequalf	MenuLocation, B'01001010', SubMenu102
+    ifequalf	MenuLocation, B'01001011', SubMenu103
     return
     
 TopMenu0 
@@ -284,125 +303,200 @@ SubMenu20
     printline	TableMenuTitle20, B'10000000'
     return
     
+SubMenu30
+    return
+    
+SubMenu100
+    printline	TableMenuTitle100, B'1000000'
+    return
+    
+SubMenu101
+    printline	TableMenuTitle101, B'1000000'
+    return
+
+SubMenu102
+    printline	TableMenuTitle102, B'1000000'
+    return
+    
+SubMenu103
+    printline	TableMenuTitle103, B'1000000'
+    return
+    
 ; QuitPushed
-; Input: PrevButtonState	    Output: OperatingMode, DisplayMode, ButtonPushed
+; Input: PrevButtonState	    Output: OperatingMode, MenuLocation, ButtonPushed
 QuitPushed
     btfsc   PrevButtonState, 3
     return
-    ButtonJustPressed
-	clrf	DisplayMode
+    QuitButtonJustPressed
+	ifequalb    MenuLocation, B'11000000', BackAndQuit
+	ifequalb    MenuLocation, B'11000001', BackAndQuit
+	ifequalb    MenuLocation, B'11000010', BackAndQuit
+	ifequalb    MenuLocation, B'11000011', BackAndQuit
+	ifequalb    MenuLocation, B'11000100', BackAndQuit
+	ifequalb    MenuLocation, B'11000101', BackAndQuit
+	ifequalb    MenuLocation, B'11000111', BackAndQuit
+	ifequalb    MenuLocation, B'11001000', BackAndQuit
+	ifequalb    MenuLocation, B'11010000', QuitOne
+	ifequalb    MenuLocation, B'11010001', QuitOne
+	ifequalb    MenuLocation, B'11010011', QuitOne
+	ifequalb    MenuLocation, B'11100000', QuitOne
+	ifequalb    MenuLocation, B'11110000', QuitOne
+	ifequalb    MenuLocation, B'01000000', QuitTwo
+	ifequalb    MenuLocation, B'01000001', QuitTwo
+	ifequalb    MenuLocation, B'01000010', QuitTwo
+	ifequalb    MenuLocation, B'01000011', QuitTwo
+	ifequalb    MenuLocation, B'01010000', QuitTwo
+	ifequalb    MenuLocation, B'01010001', QuitTwo
+	ifequalb    MenuLocation, B'01010010', QuitTwo
+	ifequalb    MenuLocation, B'01010011', QuitTwo
+	ifequalb    MenuLocation, B'01100000', QuitTwo
+	ifequalb    MenuLocation, B'01100001', QuitTwo
+	ifequalb    MenuLocation, B'01100010', QuitTwo
+	ifequalb    MenuLocation, B'01100011', QuitTwo
+	
+	return
+	EndIfQuit
 	bsf	ButtonPushed, 0
 	return
-	
+QuitOne
+    store   Temp0, B'100'
+    QuitOneForLoop
+	bsf	    STATUS, 0
+	rrcf	    MenuLocation, f
+	decf	    Temp0
+	ifnequalb    Temp0, B'0', QuitOneForLoop  	
+    goto    EndIfQuit
+    
+QuitTwo
+    store   Temp0, B'10'
+    QuitTwoForLoop
+	bsf	    STATUS, 0
+	rrcf	    MenuLocation, f
+	decf	    Temp0
+	ifnequalb   Temp0, B'0', QuitTwoForLoop  	
+    goto    EndIfQuit
+    
+BackAndQuit
+    store OperatingMode, B'100'
+    goto    QuitOne
+    
 ; RightPushed
-; Input: PrevButtonState	    Output: OperatingMode, DisplayMode, ButtonPushed
+; Input: PrevButtonState	    Output: OperatingMode, MenuLocation, ButtonPushed
 RightPushed
-    btfsc   PrevButtonState, 1
+    
+    bsf		LATA, 0
+    btfsc	PrevButtonState, 1
     return
+    
+    bsf		LATA, 1
     RightButtonJustPressed
-	ifequalb DisplayMode, B'00', ScrollDownOne
-	ifequalb DisplayMode, B'01', ScrollDownTwo
-	ifequalb DisplayMode, B'10', ScrollDownThree
-	ifequalb DisplayMode, B'10000', ScrollDownFour
-	ifequalb DisplayMode, B'0101', ScrollDownFive
-	ifequalb DisplayMode, B'1001', ScrollDownSix
+	ifequalb    MenuLocation, B'11111100', ScrollDownOne
+	ifequalb    MenuLocation, B'11111101', ScrollDownOne
+	ifequalb    MenuLocation, B'11111110', ScrollDownOne
+	ifequalb    MenuLocation, B'11000111', ScrollDownOne
+	ifequalb    MenuLocation, B'11010000', ScrollDownOne
+	ifequalb    MenuLocation, B'11010001', ScrollDownOne
+	ifequalb    MenuLocation, B'01000000', ScrollDownOne
+	ifequalb    MenuLocation, B'01000001', ScrollDownOne
+	ifequalb    MenuLocation, B'01000010', ScrollDownOne
+	ifequalb    MenuLocation, B'01000100', ScrollDownOne
+	ifequalb    MenuLocation, B'01000101', ScrollDownOne
+	ifequalb    MenuLocation, B'01000110', ScrollDownOne
+	ifequalb    MenuLocation, B'01001000', ScrollDownOne
+	ifequalb    MenuLocation, B'01001001', ScrollDownOne
+	ifequalb    MenuLocation, B'01001010', ScrollDownOne
 	return
 	EndIfScrollRight
 	bsf	ButtonPushed, 0
 	return
 	
 ScrollDownOne
-    store   DisplayMode, B'01'
-    bra	    EndIfScrollRight 
+    incf	    MenuLocation
+    goto	    EndIfScrollRight 
     
-ScrollDownTwo
-    store   DisplayMode, B'10'
-    bra	    EndIfScrollRight
-    
-ScrollDownThree
-    store   DisplayMode, B'11'
-    bra	    EndIfScrollRight
-    
-ScrollDownFour
-    store   DisplayMode, B'10000'
-    bra	    EndIfScrollRight 
-    
-ScrollDownFive
-    store   DisplayMode, B'1001'
-    bra	    EndIfScrollRight
-    
-ScrollDownSix
-    store   DisplayMode, B'1101'
-    bra	    EndIfScrollRight
     
 ; LeftPushed
-; Input: PrevButtonState	    Output: OperatingMode, DisplayMode, ButtonPushed
+; Input: PrevButtonState	    Output: OperatingMode, MenuLocation, ButtonPushed
 LeftPushed
     btfsc   PrevButtonState, 0
     return
     LeftButtonJustPressed
-	ifequalb DisplayMode, B'01', ScrollUpOne
-	ifequalb DisplayMode, B'10', ScrollUpTwo
-	ifequalb DisplayMode, B'11', ScrollUpThree
-	ifequalb DisplayMode, B'11000', ScrollUpFour
-	ifequalb DisplayMode, B'1001', ScrollUpFive
-	ifequalb DisplayMode, B'1101', ScrollDownSix
+	ifequalb    MenuLocation, B'11111101', ScrollUpOne
+	ifequalb    MenuLocation, B'11111110', ScrollUpOne
+	ifequalb    MenuLocation, B'11111111', ScrollUpOne
+	ifequalb    MenuLocation, B'11001000', ScrollUpOne
+	ifequalb    MenuLocation, B'11010001', ScrollUpOne
+	ifequalb    MenuLocation, B'11010010', ScrollUpOne
+	ifequalb    MenuLocation, B'01000001', ScrollUpOne
+	ifequalb    MenuLocation, B'01000010', ScrollUpOne
+	ifequalb    MenuLocation, B'01000011', ScrollUpOne
+	ifequalb    MenuLocation, B'01000101', ScrollUpOne
+	ifequalb    MenuLocation, B'01000110', ScrollUpOne
+	ifequalb    MenuLocation, B'01000111', ScrollUpOne
+	ifequalb    MenuLocation, B'01001001', ScrollUpOne
+	ifequalb    MenuLocation, B'01001010', ScrollUpOne
+	ifequalb    MenuLocation, B'01001011', ScrollUpOne
 	return
 	EndIfScrollLeft
 	bsf	ButtonPushed, 0
 	return
 	
+	
 ScrollUpOne
-    store   DisplayMode, B'00'
-    bra	    EndIfScrollLeft
+    decf   MenuLocation
+    goto    EndIfScrollLeft
     
-ScrollUpTwo
-    store   DisplayMode, B'1'
-    bra	    EndIfScrollLeft
-    
-ScrollUpThree
-    store   DisplayMode, B'10'
-    bra	    EndIfScrollLeft
+
     
 ; SelectedPushed
-; Input: PrevButtonState	    Output: OperatingMode, DisplayMode, ButtonPushed
+; Input: PrevButtonState	    Output: OperatingMode, MenuLocation, ButtonPushed
 SelectedPushed
     btfsc   PrevButtonState, 2
     return
 
     SelectButtonJustPressed
-	ifequalb    DisplayMode, B'0', EnterOne
-	ifequalb    DisplayMode, B'1', EnterTwo
-	ifequalb    DisplayMode, B'1011', EnterThree
-	ifequalb    DisplayMode, B'1100', EnterFour
-	ifequalb    DisplayMode, B'1101', EnterFive
+	ifequalb    MenuLocation, B'11111100', EnterOneAndStart
+	ifequalb    MenuLocation, B'11111101', EnterOne
+	ifequalb    MenuLocation, B'11111110', EnterOne
+	ifequalb    MenuLocation, B'11111111', EnterOne
+	ifequalb    MenuLocation, B'11000111', Save
+	ifequalb    MenuLocation, B'11001000', QuitOne
+	ifequalb    MenuLocation, B'11010000', EnterOne
+	ifequalb    MenuLocation, B'11010001', EnterOne
+	ifequalb    MenuLocation, B'11010010', EnterOne
 	return
+	
+	
 	EndIfEnter
 	bsf	    ButtonPushed, 0
 	return
+
+	
+EnterOneAndStart
+    store   OperatingMode, B'10'
+    goto    EnterOne
 	
 EnterOne
-    store   DisplayMode, B'10'
-    bra	    EndIfEnter
-
+    store   Temp0, B'100'
+    EnterOneForLoop
+	bcf	    STATUS, 0
+	rlcf	    MenuLocation, f
+	decf	    Temp0
+	ifnequalb    Temp0, B'0', EnterOneForLoop  	
+    goto    EndIfEnter
+    
 EnterTwo
-    store   DisplayMode, B'1011'
-    bra	    EndIfEnter
-    
-EnterThree
-    bra	    EndIfEnter
-    
-EnterFour
-    bra	    EndIfEnter
-    
-EnterFive
-    bra	    EndIfEnter
+    store   Temp0, B'10'
+    EnterTwoForLoop
+	bcf	    STATUS, 0
+	rlcf	    MenuLocation, f
+	decf	    Temp0
+	ifnequalb   Temp0, B'0', EnterTwoForLoop  	
+    goto    EndIfEnter
     
 
-    
-    
-    
-    
+Save
+    goto    QuitOne    
     
 ; ********************************************************************************
 ; LCD Functions 
