@@ -47,7 +47,32 @@ MenuLocation		    equ 0x30;
 OperatingMode		    equ 0x31;
 CurrButtonState		    equ	0x32;
 PrevButtonState		    equ 0x33;	
-ButtonPushed		    equ 0x34;		    
+ButtonPushed		    equ 0x34;
+LinePositionTracker	    equ 0x35;
+		    
+NumReg			    equ 0x50;
+NumReg256		    equ	0x51;
+BarrelHeight		    equ 0x52;
+NumBarrels		    equ	0x53;
+WaterHeightOne		    equ	0x54;
+WaterHeightTwo		    equ 0x55;
+BarrelNumber
+		    
+BarrelDistance256	    equ 0x60;
+BarrelDistanceOne	    equ	0x61;
+BarrelDistanceTwo	    equ	0x62;
+BarrelDistanceThree	    equ	0x63;
+BarrelDistanceFour	    equ	0x64;
+BarrelDistanceFive	    equ	0x65;
+BarrelDistanceSix	    equ	0x66;
+BarrelDistanceSeven	    equ	0x67;
+BCDRegOne		    equ 0x68;
+BCDRegTwo		    equ 0x69;
+BCDRegThree		    equ	0x70;
+		    
+
+		    
+
 ; ********************************************************************************
 ; Macros
 ; ********************************************************************************
@@ -99,16 +124,25 @@ printline macro  TableName, LineNumber
     call    Write16DataToLCD
     endm
 
-printch  macro Char, Position, LineNumber 
-    movlw   LineNumber                 
-    call    WriteInstToLCD
-    movlw   Position
+printch  macro Char, PositionReg, LineNumber 
+    movf    PositionReg, w       
+    iorlw   LineNumber
     call    WriteInstToLCD
     movlw   Char
     call    WriteDataToLCD
     endm
+    
+printnum macro NumReg, PositionReg, LineNumber 
+    movf    PositionReg, w       
+    iorlw   LineNumber 
+    call    WriteInstToLCD
+    movf    NumReg, w
+    addlw   B'110000'
+    call    WriteDataToLCD
+    endm
  
-	  
+
+    
 ; ********************************************************************************
 ; Vector Table
 ; ********************************************************************************
@@ -144,10 +178,10 @@ TableMenuTitle12            db  "<    DATA #3    ", 0
 	    
 TableMenuTitle20	    db	" ARE YOU SURE?  ", 0
 
-TableMenuTitle100	    db	"Barrel Number   ", 0
-TableMenuTitle101	    db	"Barrel Distance ", 0
-TableMenuTitle102	    db	"Barrel Height   ", 0
-TableMenuTitle103	    db	"Water Level	 ", 0
+TableMenuTitle100	    db	"NUM BARRELS     ", 0
+TableMenuTitle101	    db	"BARREL DISTANCE ", 0
+TableMenuTitle102	    db	"BARREL HEIGHT   ", 0
+TableMenuTitle103	    db	"WATER LEVEL	 ", 0
     
     
 ; ********************************************************************************
@@ -171,13 +205,15 @@ Main
     store	TRISC, B'11111111'
     
     ; EEPROM initialization $%^&$%^&
-    store	MenuLocation, B'11111100'
+    store	MenuLocation, B'01000000'
     call	InitializeLCD
     call	UpdateDisplay
     
     MainLoop
 	call Delay5ms
-	movff	PrevButtonState, LATB
+	;ifequalf	MenuLocation, B'1', ScrollDisplay
+	;ifequalf	MenuLocation, B'10', TopMenu1
+	;ifequalf	MenuLocation, B'100', TopMenu2
 	
 	; polls push buttons
 	movff	PORTC, CurrButtonState
@@ -307,19 +343,41 @@ SubMenu30
     return
     
 SubMenu100
-    printline	TableMenuTitle100, B'1000000'
+    printline	TableMenuTitle100, B'10000000'
     return
     
 SubMenu101
-    printline	TableMenuTitle101, B'1000000'
+    printline	TableMenuTitle101, B'10000000'
     return
 
 SubMenu102
-    printline	TableMenuTitle102, B'1000000'
+    printline	TableMenuTitle102, B'10000000'
+    clrf	LinePositionTracker
+    movff	NumBarrels, BarrelNumber
+    movlw	B'1001111'
+    movwf	NumReg256
+    scrollLoop
+	movlw	    B'1001111'
+	movwf	    NumReg
+	call	    numregtobcdreg
+	printnum    BCDRegOne, LinePositionTracker, B'10000000'
+	incf	    LinePositionTracker
+	printnum    BCDRegTwo, LinePositionTracker, B'10000000'
+	incf	    LinePositionTracker
+	printnum    BCDRegThree, LinePositionTracker, B'10000000'
+	incf	    LinePositionTracker
+	printch	    B'01100011', LinePositionTracker, B'10000000'
+	incf	    LinePositionTracker
+	printch	    B'01101101', LinePositionTracker, B'10000000'
+	incf	    LinePositionTracker
+	incf	    LinePositionTracker
+	rrcf	    NumReg256
+	decfsz	    BarrelNumber
+	bra	    scrollLoop
     return
     
 SubMenu103
-    printline	TableMenuTitle103, B'1000000'
+    printline	TableMenuTitle103, B'10000000'
     return
     
 ; QuitPushed
@@ -368,6 +426,7 @@ QuitOne
     goto    EndIfQuit
     
 QuitTwo
+    store   OperatingMode, B'0'
     store   Temp0, B'10'
     QuitTwoForLoop
 	bsf	    STATUS, 0
@@ -384,11 +443,9 @@ BackAndQuit
 ; Input: PrevButtonState	    Output: OperatingMode, MenuLocation, ButtonPushed
 RightPushed
     
-    bsf		LATA, 0
     btfsc	PrevButtonState, 1
     return
     
-    bsf		LATA, 1
     RightButtonJustPressed
 	ifequalb    MenuLocation, B'11111100', ScrollDownOne
 	ifequalb    MenuLocation, B'11111101', ScrollDownOne
@@ -461,9 +518,9 @@ SelectedPushed
 	ifequalb    MenuLocation, B'11111111', EnterOne
 	ifequalb    MenuLocation, B'11000111', Save
 	ifequalb    MenuLocation, B'11001000', QuitOne
-	ifequalb    MenuLocation, B'11010000', EnterOne
-	ifequalb    MenuLocation, B'11010001', EnterOne
-	ifequalb    MenuLocation, B'11010010', EnterOne
+	ifequalb    MenuLocation, B'11010000', EnterTwo
+	ifequalb    MenuLocation, B'11010001', EnterTwo
+	ifequalb    MenuLocation, B'11010010', EnterTwo
 	return
 	
 	
@@ -486,6 +543,7 @@ EnterOne
     goto    EndIfEnter
     
 EnterTwo
+    store   OperatingMode, B'1'
     store   Temp0, B'10'
     EnterTwoForLoop
 	bcf	    STATUS, 0
@@ -496,7 +554,77 @@ EnterTwo
     
 
 Save
-    goto    QuitOne    
+    goto    QuitOne   
+    
+numregtobcdreg 
+    clrf    BCDRegOne
+    clrf    BCDRegTwo
+    clrf    BCDRegThree
+    
+    movlw   B'1100100'
+    
+    hundloop
+	
+	subwf   NumReg, f
+	btfss   STATUS, 4
+	incf	BCDRegOne
+	btfss	STATUS, 4
+	bra	hundloop
+    addwf   NumReg, f
+ 
+    movlw   B'1010'
+    tenloop
+	subwf   NumReg, f
+	btfss   STATUS, 4
+	incf	BCDRegTwo
+	btfss	STATUS, 4
+	bra	tenloop
+    addwf   NumReg, f
+    movlw   B'1'
+    oneloop
+	subwf   NumReg, f
+	btfss   STATUS, 4
+	incf	BCDRegThree
+	btfss	STATUS, 4
+	bra	oneloop
+	
+    btfss   NumReg256, 0
+    return
+    movlw   B'101'
+    addwf   BCDRegThree, f
+    movf    BCDRegThree, w
+    movlw   B'1010'
+    subwf   BCDRegThree, w
+    btfsc   STATUS, 4
+    bra	    Tens
+    movwf   BCDRegThree
+    incf    BCDRegTwo
+    movf    BCDRegTwo, w
+    movlw   B'1010'
+    subwf   BCDRegTwo, w
+    btfsc   STATUS, 4
+    bra	    Tens
+    movwf   BCDRegTwo
+    incf    BCDRegOne
+    
+    Tens
+    movlw   B'101'
+    addwf   BCDRegTwo, f
+    movf    BCDRegTwo, w
+    movlw   B'1010'
+    subwf   BCDRegTwo, w
+    btfsc   STATUS, 4
+    bra	    Huns
+    movwf   BCDRegTwo
+    incf    BCDRegOne
+    
+    Huns
+    movlw   B'10'
+    addwf   BCDRegOne, f
+    
+    store   LATA, B'11'
+    return
+	
     
 ; ********************************************************************************
 ; LCD Functions 
