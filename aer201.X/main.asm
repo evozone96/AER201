@@ -549,7 +549,7 @@ InspectingDelay
     return
     
 ResetInspect
-    store	MenuLocation, B'11000000'
+    store	MenuLocation, B'10000000'
     call	UpdateDisplay
     return
     
@@ -609,7 +609,7 @@ SubMenu30
     return
     
 SubMenu100
-    printline	TableMenuTitle100, B'10000000'
+    printline	TableMenuTitle100, B'11000000'
     return
     
 SubMenu101
@@ -908,8 +908,27 @@ numregtobcdreg
 ; InitializeLCD: set configuration for the LCD Display
 ; Input: None                       Output: None
 InitializeLCD
+    call        Delay5ms	;100 ms
     call        Delay5ms
     call        Delay5ms
+    call        Delay5ms
+    call        Delay5ms
+    call        Delay5ms
+    call        Delay5ms
+    call        Delay5ms
+    call        Delay5ms
+    call        Delay5ms
+    call        Delay5ms
+    call        Delay5ms
+    call        Delay5ms
+    call        Delay5ms
+    call        Delay5ms
+    call        Delay5ms
+    call        Delay5ms
+    call        Delay5ms
+    call        Delay5ms
+    call        Delay5ms
+    
     movlw       B'00110011'         ; set for 8 bit twice
     call        WriteInstToLCD
     movlw       B'00110011'         ; set for 8 bit
@@ -974,7 +993,7 @@ Write16DataToLCD
         bnz     Loop16LCD
     return
     
-; MoveMSB: Move the upper 4 bits of W into PORTD without affecting current
+; MoveMSB: Move the upper 4 bits of W into PORTB without affecting current
 ;          values in it
 ; Input: W                       Output: None
 MoveMSB
