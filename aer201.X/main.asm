@@ -25,9 +25,25 @@
 ; ********************************************************************************
 ; Definitions
 ; ********************************************************************************
-#define LCD_RS	    PORTD, 2	
-#define LCD_E	    PORTD, 3
+#define LCD_RS	    PORTB, 2	
+#define LCD_E	    PORTB, 3
+    
+; PORTA 0-1 are ports for motor on/off (output)
 
+; PORTB 0-1 are ports for motor directions (output)
+; PORTB 2-7 are ports for LCD output 
+; PORTC 0 is for LED lighting up when barrel detected
+; PORTC 1 is for arm distance optical encoder
+; PORTC 2 to select barrel input
+; PORTC 3-4 ports are for I2C
+; PORTC 5 port for distance optical encoder
+; PORTC 6-7 ports are for EUART
+; PORTD 0-3 are ports for push button input 
+; PORTD 4-7 are ports for barrel water level input
+; PORTE 0 port for obstacle IR input
+; PORTE 1 port for barrel IR input
+; PORTE 2 port for tall/short barrel identification
+; 
 
 
 ; ********************************************************************************
@@ -42,21 +58,50 @@ Temp4			    equ 0x24;
 
 DelayCounter0		    equ 0x25;
 DelayCounter1		    equ 0x26;
+DelayCounter2		    equ 0x27;
+DelayCounter3		    equ	0x28;
+DelayCounter4		    equ 0x29;
+DelayCounter5		    equ 0x2A;
+DelayCounter6		    equ	0x2B;
+DelayCounter7		    equ	0x2C;
+DelayCounter8		    equ	0x2D;
 		    
+		     
 MenuLocation		    equ 0x30;
 OperatingMode		    equ 0x31;
 CurrButtonState		    equ	0x32;
 PrevButtonState		    equ 0x33;	
 ButtonPushed		    equ 0x34;
 LinePositionTracker	    equ 0x35;
-		    
+CurrSenState1		    equ 0x36;
+PrevSenState1		    equ	0x37;
+CurrSenState2		    equ	0x38;
+PrevSenState2		    equ	0x39;
+LineStartTracker	    equ	0x3A;
+CurrOpState		    equ 0x3B;
+PrevOpState		    equ	0x3C;
+
+BarrelHeightOne		    equ	0x40;
+BarrelHeightTwo		    equ	0x41;
+BarrelHeightThree	    equ	0x42;
+BarrelHeightFour	    equ	0x43;
+BarrelHeightFive	    equ	0x44;
+BarrelHeightSix		    equ	0x45;
+BarrelHeightSeven	    equ	0x46;
+	    
+WaterHeightOne		    equ	0x47;
+WaterHeightTwo		    equ 0x48;
+WaterHeightThree	    equ	0x49;
+WaterHeightFour		    equ	0x4A;
+WaterHeightFive		    equ	0x4B;
+WaterHeightSix		    equ	0x4C;
+WaterHeightSeven	    equ	0x4D;
+	    
 NumReg			    equ 0x50;
 NumReg256		    equ	0x51;
-BarrelHeight		    equ 0x52;
-NumBarrels		    equ	0x53;
-WaterHeightOne		    equ	0x54;
-WaterHeightTwo		    equ 0x55;
-BarrelNumber
+NumBarrels		    equ	0x52;
+BarrelNumber		    equ	0x53;
+CurrDistance		    equ 0x54;
 		    
 BarrelDistance256	    equ 0x60;
 BarrelDistanceOne	    equ	0x61;
@@ -68,10 +113,7 @@ BarrelDistanceSix	    equ	0x66;
 BarrelDistanceSeven	    equ	0x67;
 BCDRegOne		    equ 0x68;
 BCDRegTwo		    equ 0x69;
-BCDRegThree		    equ	0x70;
-		    
-
-		    
+BCDRegThree		    equ	0x6A;		    
 
 ; ********************************************************************************
 ; Macros
@@ -140,9 +182,6 @@ printnum macro NumReg, PositionReg, LineNumber
     addlw   B'110000'
     call    WriteDataToLCD
     endm
- 
-
-    
 ; ********************************************************************************
 ; Vector Table
 ; ********************************************************************************
@@ -157,6 +196,7 @@ printnum macro NumReg, PositionReg, LineNumber
 ; ********************************************************************************
 ; Tables
 ; ********************************************************************************
+    
 TableMenuTitle0             db  "      START    >", 0
 TableMenuTitle1             db  "<   DATA LOG   >", 0
 TableMenuTitle2             db  "< RESET MEMORY >", 0
@@ -183,7 +223,6 @@ TableMenuTitle101	    db	"BARREL DISTANCE ", 0
 TableMenuTitle102	    db	"BARREL HEIGHT   ", 0
 TableMenuTitle103	    db	"WATER LEVEL	 ", 0
     
-    
 ; ********************************************************************************
 ; Executable Code 
 ; ********************************************************************************
@@ -202,21 +241,42 @@ Main
     clrf	PORTD
     clrf	PORTE
     
-    store	TRISC, B'11111111'
+    bsf		TRISC, 5
+    store	TRISD, B'11111111'
+    bsf		TRISE, 0
+    bsf		TRISE, 1
+    bsf		TRISE, 2
+    
     
     ; EEPROM initialization $%^&$%^&
     store	MenuLocation, B'01000000'
     call	InitializeLCD
     call	UpdateDisplay
+    clrf	DelayCounter0
+    clrf	DelayCounter1
+    clrf	DelayCounter2
+    clrf	DelayCounter3
+    clrf	DelayCounter4
+    clrf	DelayCounter5
+    clrf	DelayCounter6
+    clrf	DelayCounter7
+    clrf	DelayCounter8
     
     MainLoop
-	call Delay5ms
-	;ifequalf	MenuLocation, B'1', ScrollDisplay
-	;ifequalf	MenuLocation, B'10', TopMenu1
-	;ifequalf	MenuLocation, B'100', TopMenu2
+	; polls sensors values
+	movff	PORTC, CurrOpState
+	movff	PORTD, CurrSenState1
+	movff	PORTE, CurrSenState2
+	
+	
+	ifequalf	OperatingMode, B'1', ScrollDisplay
+	ifequalf	OperatingMode, B'10', Forward
+	ifequalf	OperatingMode, B'100', Shrink
+	ifequalf	OperatingMode, B'1000', ForwardSE
+	ifequalf	OperatingMode, B'10000', Extend
 	
 	; polls push buttons
-	movff	PORTC, CurrButtonState
+	movff	CurrSenState1, CurrButtonState
 	btfsc	CurrButtonState, 2
 	call	SelectedPushed
 	btfsc	CurrButtonState, 0
@@ -229,9 +289,178 @@ Main
 	call	UpdateDisplay
 	bcf	ButtonPushed, 0
 	
-	
+	movff	CurrOpState, PrevOpState
+	movff	CurrSenState1, PrevSenState1
+	movff	CurrSenState2, PrevSenState2
 	movff	CurrButtonState, PrevButtonState
 	bra	MainLoop
+	
+; ScrollDisplay: updates the position tracker if a line longer than 16 
+; characters is displayed for data
+; Input: LinePositionTracker
+ScrollDisplay
+    incf	DelayCounter3
+    movlw	B'11111111'
+    subwf	DelayCounter3, W
+    btfss	STATUS, 2
+    return
+    movlw	0
+    movwf	DelayCounter3
+    incf	DelayCounter7
+    movlw	B'11111111'
+    subwf	DelayCounter7, W
+    btfss	STATUS, 2
+    return
+    movlw	0
+    movwf	DelayCounter7
+    incf	DelayCounter8
+    movlw	B'100'
+    subwf	DelayCounter8, W
+    btfss	STATUS, 2
+    return  
+    
+    movlw	B'10001'
+    subwf	LineStartTracker, W
+    btfsc	STATUS, 2
+    call	ResetLine
+    decf	LineStartTracker
+    return
+    
+ResetLine
+    movlw	B'1'
+    movwf	LineStartTracker
+    return
+
+	
+; Forward: Moves forward for a fixed amount of time, at a fixed speed, polls 
+; sensors and logs distance travelled and barrel data.
+; Input: DelayCounter2		    Output: OperatingMode
+Forward
+    bcf		LATA, 1
+    movlw	B'11110001'		; needs testing
+    subwf	DelayCounter2, W                      
+    btfsc	STATUS, 2
+    bra		StopMotor
+    movlw	B'111100'			     
+    subwf	DelayCounter2, W
+    btfsc	STATUS, 2
+    bra		StartMotor
+    bra		Continue
+    
+StartMotor
+    bsf		LATA, 0
+    bsf		LATB, 0			    ; may be bcf
+    bra		Continue
+    
+StopMotor
+    bsf		LATC, 0
+    movlw	B'0'		    ; Start:Stop = 4:1
+    movwf	DelayCounter2
+    bcf		LATA, 0
+    bra		Continue
+    
+Continue	
+    incf	DelayCounter2
+    bra		PollObsta
+    
+PollObsta
+    btfss	PORTE, 0
+    bra		PollBarrel
+    
+    store	OperatingMode, B'100'
+    bra		AddLog
+    
+PollBarrel
+    btfss	CurrSenState2, 1
+    bra		AddLog
+    btfsc	PrevSenState2, 1
+    bra		AddLog
+    
+    movff	CurrDistance, POSTINC0
+    btfss	PORTE, 2
+    bra		TallBarrel
+    bra		ShortBarrel
+    
+TallBarrel
+    bsf		POSTINC1, 0
+    bsf		LATC, 2
+    bra		Read
+    
+ShortBarrel
+    bcf		POSTINC1, 0
+    bcf		LATC, 2
+    bra		Read
+    
+Read
+    btfss	CurrSenState1, 4
+    bra		Empty
+    btfss	CurrSenState1, 5
+    bra		Half
+    bra		Full
+    btfss	CurrSenState1, 6
+    bra		Empty
+    btfss	CurrSenState1, 7
+    bra		Half
+    bra		Full
+
+Empty
+    bsf		POSTINC2, 0
+    bra		AddLog
+    
+Half
+    bsf		POSTINC2, 1
+    bra		AddLog
+    
+Full
+    bsf		POSTINC2, 2
+    bra		AddLog
+    
+AddLog
+    call	InspectingDelay
+    btfss	CurrOpState, 5
+    return
+    btfsc	PrevOpState, 5
+    return
+    incf	CurrDistance
+    
+    return
+    
+Shrink
+    bcf		LATA, 0
+    bsf		LATA, 1
+    bsf		LATB, 1
+    btfss	CurrOpState, 1
+    bra		AddLog
+    btfsc	PrevOpState, 1
+    bra		AddLog
+    store	OperatingMode, B'1000'
+    bra		AddLog
+    
+Extend
+    bcf		LATA, 0
+    bsf		LATA, 1
+    bcf		LATB, 1
+    btfss	CurrOpState, 1
+    bra		AddLog
+    btfsc	PrevOpState, 1
+    bra		AddLog
+    store	OperatingMode, B'10'
+    bra		AddLog
+    
+ForwardSE
+    bsf		LATA, 0
+    bsf		LATB, 0
+    bcf		LATA, 1
+    bra		AddLog
+    
+Backward
+    bsf		LATA, 0
+    bcf		LATB, 0
+    bcf		LATA, 1
+    call	InspectingDelay
+    
+    return
+    
     
 ; UpdateDisplay: Updates display when user of the machine has changed modes
 ; Input: MenuLocation		    Output: None
@@ -256,7 +485,7 @@ UpdateDisplay
     ifequalf	MenuLocation, B'11010001', SubMenu11
     ifequalf	MenuLocation, B'11010010', SubMenu12
     ifequalf	MenuLocation, B'11100000', SubMenu20
-    ifequalf	MenuLocation, B'11110000', SubMenu20
+    ifequalf	MenuLocation, B'11110000', SubMenu30
     ifequalf	MenuLocation, B'01000000', SubMenu100
     ifequalf	MenuLocation, B'01000001', SubMenu101
     ifequalf	MenuLocation, B'01000010', SubMenu102
@@ -285,6 +514,43 @@ TopMenu2
     
 TopMenu3 
     printline	TableMenuTitle3, B'10000000'
+    return
+    
+InspectingDelay
+    
+    
+    incf	DelayCounter4
+    movlw	B'11111111'
+    subwf	DelayCounter4, W
+    btfss	STATUS, 2
+    return
+    
+    clrf	DelayCounter4
+    incf	DelayCounter5
+    movlw	B'111111'
+    subwf	DelayCounter5, W
+    btfss	STATUS, 2
+    return
+    
+    clrf	DelayCounter5
+    incf	DelayCounter6
+    movlw	B'10'
+    subwf	DelayCounter6, W
+    btfss	STATUS, 2
+    return
+    
+    clrf	DelayCounter6
+    movlw	B'11000101'
+    subwf	MenuLocation, W
+    btfsc	STATUS, 2
+    bra		ResetInspect
+    incf	MenuLocation
+    call	UpdateDisplay
+    return
+    
+ResetInspect
+    store	MenuLocation, B'11000000'
+    call	UpdateDisplay
     return
     
 SubMenu00
@@ -352,7 +618,7 @@ SubMenu101
 
 SubMenu102
     printline	TableMenuTitle102, B'10000000'
-    clrf	LinePositionTracker
+    movff	LineStartTracker, LinePositionTracker
     movff	NumBarrels, BarrelNumber
     movlw	B'1001111'
     movwf	NumReg256
@@ -436,7 +702,7 @@ QuitTwo
     goto    EndIfQuit
     
 BackAndQuit
-    store OperatingMode, B'100'
+    store OperatingMode, B'0'
     goto    QuitOne
     
 ; RightPushed
@@ -531,6 +797,15 @@ SelectedPushed
 	
 EnterOneAndStart
     store   OperatingMode, B'10'
+    clrf    FSR0H
+    movlw   0x61
+    movwf   FSR0L
+    clrf    FSR1H
+    movlw   0x40
+    movwf   FSR0L
+    clrf    FSR2H
+    movlw   0x47
+    movwf   FSR2L    
     goto    EnterOne
 	
 EnterOne
@@ -703,12 +978,12 @@ Write16DataToLCD
 ;          values in it
 ; Input: W                       Output: None
 MoveMSB
-    movff   PORTD, Temp1
+    movff   PORTB, Temp1
     andlw   0xF0
     iorwf   Temp1,F                 ; OR operation and store it in File Reg
     iorlw   0x0F
     andwf   Temp1,F                 ; AND operation and store it in File Reg
-    movff   Temp1, PORTD
+    movff   Temp1, LATB
     return
 
 ; ClearLCD: Clear the entire LCD
