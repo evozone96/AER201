@@ -249,7 +249,7 @@ Main
     
     
     ; EEPROM initialization $%^&$%^&
-    store	MenuLocation, B'01000000'
+    store	MenuLocation, B'11111100'
     call	InitializeLCD
     call	UpdateDisplay
     clrf	DelayCounter0
@@ -261,6 +261,7 @@ Main
     clrf	DelayCounter6
     clrf	DelayCounter7
     clrf	DelayCounter8
+    clrf	OperatingMode
     
     MainLoop
 	; polls sensors values
@@ -304,24 +305,22 @@ ScrollDisplay
     subwf	DelayCounter3, W
     btfss	STATUS, 2
     return
-    movlw	0
-    movwf	DelayCounter3
+    clrf	DelayCounter3
     incf	DelayCounter7
     movlw	B'11111111'
     subwf	DelayCounter7, W
     btfss	STATUS, 2
     return
-    movlw	0
-    movwf	DelayCounter7
+    clrf	DelayCounter7
     incf	DelayCounter8
     movlw	B'100'
     subwf	DelayCounter8, W
     btfss	STATUS, 2
     return  
-    
+    clrf	DelayCounter8
     movlw	B'10001'
-    subwf	LineStartTracker, W
-    btfsc	STATUS, 2
+    subwf	LinePositionTracker, W
+    btfsc	STATUS, 4
     call	ResetLine
     decf	LineStartTracker
     return
@@ -433,6 +432,7 @@ Shrink
     bra		AddLog
     btfsc	PrevOpState, 1
     bra		AddLog
+    ; add to armdistance counter
     store	OperatingMode, B'1000'
     bra		AddLog
     
@@ -444,6 +444,7 @@ Extend
     bra		AddLog
     btfsc	PrevOpState, 1
     bra		AddLog
+    ; add to armdistance counter
     store	OperatingMode, B'10'
     bra		AddLog
     
@@ -549,7 +550,7 @@ InspectingDelay
     return
     
 ResetInspect
-    store	MenuLocation, B'10000000'
+    store	MenuLocation, B'11000000'
     call	UpdateDisplay
     return
     
@@ -609,7 +610,7 @@ SubMenu30
     return
     
 SubMenu100
-    printline	TableMenuTitle100, B'11000000'
+    printline	TableMenuTitle100, B'10000000'
     return
     
 SubMenu101
@@ -619,12 +620,15 @@ SubMenu101
 SubMenu102
     printline	TableMenuTitle102, B'10000000'
     movff	LineStartTracker, LinePositionTracker
+    store	NumBarrels, B'11'
     movff	NumBarrels, BarrelNumber
-    movlw	B'1001111'
+    movlw	B'1111111'
     movwf	NumReg256
     scrollLoop
+    
 	movlw	    B'1001111'
 	movwf	    NumReg
+
 	call	    numregtobcdreg
 	printnum    BCDRegOne, LinePositionTracker, B'10000000'
 	incf	    LinePositionTracker
