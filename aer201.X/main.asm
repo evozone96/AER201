@@ -25,8 +25,8 @@
 ; ********************************************************************************
 ; Definitions
 ; ********************************************************************************
-#define LCD_RS	    PORTB, 2	
-#define LCD_E	    PORTB, 3
+#define LCD_RS	    LATB, 2	
+#define LCD_E	    LATB, 3
     
 ; PORTA 0-1 are ports for motor on/off (output)
 
@@ -65,6 +65,8 @@ DelayCounter5		    equ 0x2A;
 DelayCounter6		    equ	0x2B;
 DelayCounter7		    equ	0x2C;
 DelayCounter8		    equ	0x2D;
+DelayCounter9		    equ	0x2E;
+DelayCounter10		    equ	0x2F;
 		    
 		     
 MenuLocation		    equ 0x30;
@@ -197,7 +199,7 @@ printnum macro NumReg, PositionReg, LineNumber
 ; Tables
 ; ********************************************************************************
     
-TableMenuTitle0             db  "      START    >", 0
+TableMenuTitle0             db  "     START     >", 0
 TableMenuTitle1             db  "<   DATA LOG   >", 0
 TableMenuTitle2             db  "< RESET MEMORY >", 0
 TableMenuTitle3             db  "< SET DATE/TIME ", 0
@@ -249,9 +251,9 @@ Main
     
     
     ; EEPROM initialization $%^&$%^&
-    store	MenuLocation, B'11111100'
-    call	InitializeLCD
-    call	UpdateDisplay
+    
+    
+    
     clrf	DelayCounter0
     clrf	DelayCounter1
     clrf	DelayCounter2
@@ -261,8 +263,13 @@ Main
     clrf	DelayCounter6
     clrf	DelayCounter7
     clrf	DelayCounter8
+    clrf	DelayCounter9
+    clrf	DelayCounter10
     clrf	OperatingMode
-    
+    call	Delay500ms
+    call	InitializeLCD
+    store	MenuLocation, B'11111100'
+    call	UpdateDisplay
     MainLoop
 	; polls sensors values
 	movff	PORTC, CurrOpState
@@ -502,7 +509,7 @@ UpdateDisplay
     return
     
 TopMenu0 
-    printline	TableMenuTitle0, B'10000000'
+    printline	TableMenuTitle0, B'11000000'
     return
     
 TopMenu1 
@@ -912,42 +919,44 @@ numregtobcdreg
 ; InitializeLCD: set configuration for the LCD Display
 ; Input: None                       Output: None
 InitializeLCD
-    call        Delay5ms	;100 ms
-    call        Delay5ms
-    call        Delay5ms
-    call        Delay5ms
-    call        Delay5ms
-    call        Delay5ms
-    call        Delay5ms
-    call        Delay5ms
-    call        Delay5ms
-    call        Delay5ms
-    call        Delay5ms
-    call        Delay5ms
-    call        Delay5ms
-    call        Delay5ms
-    call        Delay5ms
-    call        Delay5ms
-    call        Delay5ms
-    call        Delay5ms
-    call        Delay5ms
-    call        Delay5ms
+    	;bsf PORTD,E     ;E default high
+	
+	;Wait for LCD POR to finish (~15ms)
+	call Delay5ms
+	call Delay5ms
+	call Delay5ms
+
+	;Ensure 8-bit mode first (no way to immediately guarantee 4-bit mode)
+	; -> Send b'0011' 3 times
+	bcf     LCD_RS       ;Instruction mode
+	movlw   B'00110000'
+	call    MoveMSB
+	call    ClockLCD         ;Finish last 4-bit send (if reset occurred in middle of a send)
+	call    ClockLCD         ;Assuming 4-bit mode, set 8-bit mode
+	call    Delay5ms   ;->max instruction time ~= 5ms
+	call    ClockLCD         ;(note: if it's in 8-bit mode already, it will stay in 8-bit mode)
+
+    ;Now that we know for sure it's in 8-bit mode, set 4-bit mode.
+	movlw B'00100000'
+	call MoveMSB
+	call ClockLCD
+	call    Delay5ms   ;->max instruction time ~= 5ms
+	;Give LCD init instructions
+	movlw	B'00101000' ; 4 bits, 2 lines,5X8 dot
+	call	WriteInstToLCD
+	call    Delay5ms   ;->max instruction time ~= 5ms
+	movlw	B'00001111' ; display on,cursor,blink
+	call	WriteInstToLCD
+	call    Delay5ms   ;->max instruction time ~= 5ms
+	movlw	B'00000110' ; Increment,no shift
+	call	WriteInstToLCD
+	call    Delay5ms   ;->max instruction time ~= 5ms
+	;Ready to display characters
+	call    ClearLCD
+	bsf     LCD_RS    ;Character mode
+	return
+	
     
-    movlw       B'00110011'         ; set for 8 bit twice
-    call        WriteInstToLCD
-    movlw       B'00110011'         ; set for 8 bit
-    call        WriteInstToLCD
-    movlw       B'00110011'         ; set for 8 bit once again, then 4 bit
-    call        WriteInstToLCD
-    movlw       B'00101000'         ; 4 bits, 2 lines, 5x8
-    call        WriteInstToLCD
-    movlw       B'00001100'         ; display on/off
-    call        WriteInstToLCD
-    movlw       B'00000110'         ; entry mode
-    call        WriteInstToLCD
-    movlw       B'00000001'         ; clear ram
-    call        WriteInstToLCD
-    return
     
     
 ; WriteInstToLCD: sequences of command to modify the config of LCD
@@ -956,32 +965,22 @@ WriteInstToLCD
     bcf     LCD_RS                  ; clear RS to enter instruction mode
     movwf   Temp0                   ; store into Temporary register
     call    MoveMSB
-    bsf     LCD_E                   ; pulse LCD high
-    nop
-    bcf     LCD_E                   ; pulse LCD low
+    call    ClockLCD
     swapf   Temp0, W                ; swap nibbles
     call    MoveMSB
-    bsf     LCD_E                   ; pulse LCD high
-    nop                             ; wait
-    bcf     LCD_E                   ; pulse LCD low
-    call    Delay5ms
+    call    ClockLCD
     return
     
 ; WriteDataToLCD: sequences of command to display a character on LCD
 ; Input: W                          Output: None
 WriteDataToLCD
     bsf     LCD_RS                  ; set RS for data mode
-    movwf   Temp0		    ; store into temporary register
+    movwf   Temp0                   ; store into Temporary register
     call    MoveMSB
-    bsf     LCD_E                   ; pulse LCD high
-    nop
-    bcf     LCD_E                   ; pulse LCD low
+    call    ClockLCD
     swapf   Temp0, W                ; swap nibbles
     call    MoveMSB
-    bsf     LCD_E                   ; pulse LCD high
-    nop                             ; wait
-    bcf     LCD_E                   ; pulse LCD low
-    call    Delay44us
+    call    ClockLCD
     return
     
 ; Write16DataToLCD: Take 16 Character from the table, and display them one by
@@ -1001,44 +1000,86 @@ Write16DataToLCD
 ;          values in it
 ; Input: W                       Output: None
 MoveMSB
-    movff   PORTB, Temp1
     andlw   0xF0
-    iorwf   Temp1,F                 ; OR operation and store it in File Reg
+    iorwf   PORTB,f
     iorlw   0x0F
-    andwf   Temp1,F                 ; AND operation and store it in File Reg
-    movff   Temp1, LATB
+    andwf   PORTB,w
+    movwf   LATB
     return
+
 
 ; ClearLCD: Clear the entire LCD
 ; Input: None                   Output: None
 ClearLCD
-    movlw   B'11000000'             ; 2nd line
+    bcf     LCD_RS      ;Instruction mode
+    movlw   b'00000001'
     call    WriteInstToLCD
-    movlw   B'00000001'             ; clear 2nd line
-    call    WriteInstToLCD
-    movlw   B'10000000'             ; 1st line
-    call    WriteInstToLCD
-    movlw   B'00000001'             ; clear 1st line
-    call    WriteInstToLCD
+    call    Delay5ms
+    return
+    
+
+    
+ClockLCD
+    ;Delay44us
+    bsf LCD_E
+    nop
+	;Delay44us   ; __    __
+    bcf LCD_E ;   |__|
+    call    Delay44us
     return
     
 Delay5ms
-    store   DelayCounter1, d'110'
+			;2493 cycles
+    movlw	0xC2
+    movwf	DelayCounter0
+    movlw	0x0A
+    movwf	DelayCounter1
     Delay5msLoop
-        call    Delay44us
-        decfsz  DelayCounter1, 1
-        bra     Delay5msLoop
+	decfsz	DelayCounter0, f
+	goto	$+6
+	decfsz	DelayCounter1, f
+	goto	Delay5msLoop
+
+		    ;3 cycles
+    goto    $+4
+    nop
+
+		    ;4 cycles (including call)
     return
     
-Delay44us
-    store   DelayCounter0, 0x23
+Delay44us		;82 cycles
+    movlw   0x23
+    movwf   DelayCounter0
     Delay44usLoop
-        decfsz  DelayCounter0, 1
-        bra     Delay44usLoop
+	decfsz	DelayCounter0, f
+	goto	Delay44usLoop
     return
+    
+    
+Delay500ms
+			;999990 cycles
+	movlw	0x5A
+	movwf	DelayCounter0
+	movlw	0xCD
+	movwf	DelayCounter1
+	movlw	0x16
+	movwf	DelayCounter9
+    Delay500msDelayLoop
+	decfsz	DelayCounter0, f
+	goto	$+6
+	decfsz	DelayCounter1, f
+	goto	$+6
+	decfsz	DelayCounter9, f
+	goto	Delay500msDelayLoop
+
+			;6 cycles
+	nop
+
+			;4 cycles (including call)
+	return
     
 Interrupt
-    bra	    Interrupt
+    goto    Interrupt
     
 PowerOff    
     end
