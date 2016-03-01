@@ -1,5 +1,5 @@
 MPLINK 5.08, LINKER
-Linker Map File - Created Mon Feb 22 17:01:00 2016
+Linker Map File - Created Mon Feb 29 13:28:21 2016
 
                                  Section Info
                   Section       Type    Address   Location Size(Bytes)
@@ -7,7 +7,7 @@ Linker Map File - Created Mon Feb 22 17:01:00 2016
                    .org_0       code   0x000000    program   0x000004
                    .cinit    romdata   0x000004    program   0x000002
                    .org_1       code   0x000008    program   0x000004
-                   .org_2       code   0x000018    program   0x000bc2
+                   .org_2       code   0x000018    program   0x000bc4
 .config_300001_BUILD/DEFAULT/PRODUCTION/MAIN.O    romdata   0x300001    program   0x000001
 .config_300002_BUILD/DEFAULT/PRODUCTION/MAIN.O    romdata   0x300002    program   0x000001
 .config_300003_BUILD/DEFAULT/PRODUCTION/MAIN.O    romdata   0x300003    program   0x000001
@@ -27,93 +27,96 @@ Linker Map File - Created Mon Feb 22 17:01:00 2016
                            ---------   ---------      
                             0x000000    0x000005      
                             0x000008    0x00000b      
-                            0x000018    0x000bd9      
+                            0x000018    0x000bdb      
                             0x300001    0x300003      
                             0x300005    0x300006      
                             0x300008    0x30000d      
-            3031 out of 66584 program addresses used, program memory utilization is 4%
+            3033 out of 66584 program addresses used, program memory utilization is 4%
 
 
 
                               Symbols - Sorted by Name
                      Name    Address   Location    Storage File                     
                 ---------  ---------  ---------  --------- ---------                
-                   AddLog   0x0002f0    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-              BackAndQuit   0x000850    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                 Backward   0x000330    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                 ClearLCD   0x000ba6    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                 Continue   0x0002a4    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                Delay44us   0x000bce    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-            Delay44usLoop   0x000bd2    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                 Delay5ms   0x000bc0    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-             Delay5msLoop   0x000bc4    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                    Empty   0x0002e4    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-               EndIfEnter   0x000a04    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                EndIfQuit   0x000818    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-          EndIfScrollLeft   0x00099a    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-         EndIfScrollRight   0x0008f4    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                 EnterOne   0x000a22    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-         EnterOneAndStart   0x000a08    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-          EnterOneForLoop   0x000a26    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                 EnterTwo   0x000a3a    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-          EnterTwoForLoop   0x000a42    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                   Extend   0x000314    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                  Forward   0x000280    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                ForwardSE   0x000328    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                     Full   0x0002ec    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                     Half   0x0002e8    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                     Huns   0x000abe    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-            InitializeLCD   0x000ac8    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-          InspectingDelay   0x0004ce    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                   AddLog   0x0002f4    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+              BackAndQuit   0x000858    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                 Backward   0x000334    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                 ClearLCD   0x000b74    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                 ClockLCD   0x000b82    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                 Continue   0x0002a8    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                Delay44us   0x000baa    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+            Delay44usLoop   0x000bae    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+               Delay500ms   0x000bb6    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+      Delay500msDelayLoop   0x000bc2    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                 Delay5ms   0x000b8e    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+             Delay5msLoop   0x000b96    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                    Empty   0x0002e8    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+               EndIfEnter   0x000a0c    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                EndIfQuit   0x000820    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+          EndIfScrollLeft   0x0009a2    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+         EndIfScrollRight   0x0008fc    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                 EnterOne   0x000a2a    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+         EnterOneAndStart   0x000a10    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+          EnterOneForLoop   0x000a2e    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                 EnterTwo   0x000a42    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+          EnterTwoForLoop   0x000a4a    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                   Extend   0x000318    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                  Forward   0x000284    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                ForwardSE   0x00032c    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                     Full   0x0002f0    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                     Half   0x0002ec    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                     Huns   0x000ac6    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+            InitializeLCD   0x000ad0    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+          InspectingDelay   0x0004d2    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
                 Interrupt   0x000bd8    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-    LeftButtonJustPressed   0x000902    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-               LeftPushed   0x0008fe    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                Loop16LCD   0x000b88    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+    LeftButtonJustPressed   0x00090a    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+               LeftPushed   0x000906    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                Loop16LCD   0x000b5c    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
                      Main   0x000194    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                 MainLoop   0x0001d2    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                  MoveMSB   0x000b94    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-               PollBarrel   0x0002b2    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                PollObsta   0x0002a8    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                 PowerOff   0x000bda    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-    QuitButtonJustPressed   0x00071c    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                  QuitOne   0x00081c    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-           QuitOneForLoop   0x000820    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-               QuitPushed   0x000718    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                  QuitTwo   0x000834    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-           QuitTwoForLoop   0x00083c    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                     Read   0x0002d0    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-             ResetInspect   0x000502    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                ResetLine   0x00027a    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-   RightButtonJustPressed   0x00085c    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-              RightPushed   0x000858    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                     Save   0x000a56    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-            ScrollDisplay   0x000246    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-            ScrollDownOne   0x0008f8    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-              ScrollUpOne   0x00099e    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-  SelectButtonJustPressed   0x0009a8    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-           SelectedPushed   0x0009a4    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-              ShortBarrel   0x0002ca    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                   Shrink   0x000300    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-               StartMotor   0x000294    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                StopMotor   0x00029a    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                SubMenu00   0x00050c    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                SubMenu01   0x000524    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                SubMenu02   0x00053c    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                SubMenu03   0x000554    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                SubMenu04   0x00056c    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                SubMenu05   0x000584    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                SubMenu06   0x00059c    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                SubMenu07   0x0005b4    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                SubMenu08   0x0005cc    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                SubMenu10   0x0005e4    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-               SubMenu100   0x000646    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-               SubMenu101   0x00065e    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-               SubMenu102   0x000676    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-               SubMenu103   0x000700    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                SubMenu11   0x0005fc    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                SubMenu12   0x000614    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                SubMenu20   0x00062c    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                SubMenu30   0x000644    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                 MainLoop   0x0001d8    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                  MoveMSB   0x000b68    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+               PollBarrel   0x0002b6    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                PollObsta   0x0002ac    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                 PowerOff   0x000bdc    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+    QuitButtonJustPressed   0x000724    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                  QuitOne   0x000824    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+           QuitOneForLoop   0x000828    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+               QuitPushed   0x000720    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                  QuitTwo   0x00083c    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+           QuitTwoForLoop   0x000844    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                     Read   0x0002d4    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+             ResetInspect   0x000506    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                ResetLine   0x00027e    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+   RightButtonJustPressed   0x000864    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+              RightPushed   0x000860    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                     Save   0x000a5e    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+            ScrollDisplay   0x00024c    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+            ScrollDownOne   0x000900    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+              ScrollUpOne   0x0009a6    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+  SelectButtonJustPressed   0x0009b0    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+           SelectedPushed   0x0009ac    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+              ShortBarrel   0x0002ce    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                   Shrink   0x000304    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+               StartMotor   0x000298    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                StopMotor   0x00029e    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                SubMenu00   0x000510    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                SubMenu01   0x000528    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                SubMenu02   0x000540    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                SubMenu03   0x000558    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                SubMenu04   0x000570    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                SubMenu05   0x000588    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                SubMenu06   0x0005a0    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                SubMenu07   0x0005b8    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                SubMenu08   0x0005d0    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                SubMenu10   0x0005e8    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+               SubMenu100   0x00064a    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+               SubMenu101   0x000662    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+               SubMenu102   0x00067a    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+               SubMenu103   0x000708    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                SubMenu11   0x000600    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                SubMenu12   0x000618    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                SubMenu20   0x000630    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                SubMenu30   0x000648    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
           TableMenuTitle0   0x00001a    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
          TableMenuTitle00   0x000062    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
          TableMenuTitle01   0x000074    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
@@ -135,21 +138,25 @@ Linker Map File - Created Mon Feb 22 17:01:00 2016
           TableMenuTitle2   0x00003e    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
          TableMenuTitle20   0x00013a    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
           TableMenuTitle3   0x000050    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-               TallBarrel   0x0002c4    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                     Tens   0x000aac    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                 TopMenu0   0x00046e    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                 TopMenu1   0x000486    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                 TopMenu2   0x00049e    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                 TopMenu3   0x0004b6    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-            UpdateDisplay   0x00033c    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-         Write16DataToLCD   0x000b84    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-           WriteDataToLCD   0x000b64    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-           WriteInstToLCD   0x000b44    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                 hundloop   0x000a62    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-           numregtobcdreg   0x000a5a    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                  oneloop   0x000a7e    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-               scrollLoop   0x000698    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                  tenloop   0x000a70    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+               TallBarrel   0x0002c8    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                     Tens   0x000ab4    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                 TopMenu0   0x000472    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                 TopMenu1   0x00048a    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                 TopMenu2   0x0004a2    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                 TopMenu3   0x0004ba    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+            UpdateDisplay   0x000340    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+         Write16DataToLCD   0x000b58    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+           WriteDataToLCD   0x000b40    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+           WriteInstToLCD   0x000b28    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+             _.org_2_0B98   0x000b98    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+             _.org_2_0BA2   0x000ba2    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+             _.org_2_0BC4   0x000bc4    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+             _.org_2_0BCA   0x000bca    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                 hundloop   0x000a6a    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+           numregtobcdreg   0x000a62    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                  oneloop   0x000a86    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+               scrollLoop   0x0006a0    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                  tenloop   0x000a78    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
 
 
 
@@ -178,95 +185,102 @@ Linker Map File - Created Mon Feb 22 17:01:00 2016
         TableMenuTitle102   0x000170    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
         TableMenuTitle103   0x000182    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
                      Main   0x000194    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                 MainLoop   0x0001d2    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-            ScrollDisplay   0x000246    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                ResetLine   0x00027a    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                  Forward   0x000280    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-               StartMotor   0x000294    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                StopMotor   0x00029a    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                 Continue   0x0002a4    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                PollObsta   0x0002a8    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-               PollBarrel   0x0002b2    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-               TallBarrel   0x0002c4    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-              ShortBarrel   0x0002ca    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                     Read   0x0002d0    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                    Empty   0x0002e4    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                     Half   0x0002e8    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                     Full   0x0002ec    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                   AddLog   0x0002f0    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                   Shrink   0x000300    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                   Extend   0x000314    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                ForwardSE   0x000328    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                 Backward   0x000330    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-            UpdateDisplay   0x00033c    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                 TopMenu0   0x00046e    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                 TopMenu1   0x000486    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                 TopMenu2   0x00049e    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                 TopMenu3   0x0004b6    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-          InspectingDelay   0x0004ce    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-             ResetInspect   0x000502    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                SubMenu00   0x00050c    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                SubMenu01   0x000524    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                SubMenu02   0x00053c    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                SubMenu03   0x000554    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                SubMenu04   0x00056c    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                SubMenu05   0x000584    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                SubMenu06   0x00059c    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                SubMenu07   0x0005b4    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                SubMenu08   0x0005cc    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                SubMenu10   0x0005e4    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                SubMenu11   0x0005fc    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                SubMenu12   0x000614    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                SubMenu20   0x00062c    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                SubMenu30   0x000644    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-               SubMenu100   0x000646    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-               SubMenu101   0x00065e    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-               SubMenu102   0x000676    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-               scrollLoop   0x000698    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-               SubMenu103   0x000700    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-               QuitPushed   0x000718    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-    QuitButtonJustPressed   0x00071c    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                EndIfQuit   0x000818    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                  QuitOne   0x00081c    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-           QuitOneForLoop   0x000820    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                  QuitTwo   0x000834    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-           QuitTwoForLoop   0x00083c    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-              BackAndQuit   0x000850    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-              RightPushed   0x000858    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-   RightButtonJustPressed   0x00085c    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-         EndIfScrollRight   0x0008f4    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-            ScrollDownOne   0x0008f8    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-               LeftPushed   0x0008fe    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-    LeftButtonJustPressed   0x000902    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-          EndIfScrollLeft   0x00099a    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-              ScrollUpOne   0x00099e    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-           SelectedPushed   0x0009a4    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-  SelectButtonJustPressed   0x0009a8    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-               EndIfEnter   0x000a04    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-         EnterOneAndStart   0x000a08    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                 EnterOne   0x000a22    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-          EnterOneForLoop   0x000a26    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                 EnterTwo   0x000a3a    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-          EnterTwoForLoop   0x000a42    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                     Save   0x000a56    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-           numregtobcdreg   0x000a5a    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                 hundloop   0x000a62    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                  tenloop   0x000a70    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                  oneloop   0x000a7e    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                     Tens   0x000aac    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                     Huns   0x000abe    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-            InitializeLCD   0x000ac8    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-           WriteInstToLCD   0x000b44    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-           WriteDataToLCD   0x000b64    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-         Write16DataToLCD   0x000b84    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                Loop16LCD   0x000b88    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                  MoveMSB   0x000b94    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                 ClearLCD   0x000ba6    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                 Delay5ms   0x000bc0    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-             Delay5msLoop   0x000bc4    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                Delay44us   0x000bce    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-            Delay44usLoop   0x000bd2    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                 MainLoop   0x0001d8    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+            ScrollDisplay   0x00024c    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                ResetLine   0x00027e    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                  Forward   0x000284    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+               StartMotor   0x000298    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                StopMotor   0x00029e    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                 Continue   0x0002a8    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                PollObsta   0x0002ac    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+               PollBarrel   0x0002b6    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+               TallBarrel   0x0002c8    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+              ShortBarrel   0x0002ce    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                     Read   0x0002d4    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                    Empty   0x0002e8    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                     Half   0x0002ec    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                     Full   0x0002f0    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                   AddLog   0x0002f4    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                   Shrink   0x000304    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                   Extend   0x000318    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                ForwardSE   0x00032c    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                 Backward   0x000334    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+            UpdateDisplay   0x000340    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                 TopMenu0   0x000472    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                 TopMenu1   0x00048a    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                 TopMenu2   0x0004a2    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                 TopMenu3   0x0004ba    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+          InspectingDelay   0x0004d2    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+             ResetInspect   0x000506    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                SubMenu00   0x000510    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                SubMenu01   0x000528    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                SubMenu02   0x000540    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                SubMenu03   0x000558    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                SubMenu04   0x000570    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                SubMenu05   0x000588    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                SubMenu06   0x0005a0    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                SubMenu07   0x0005b8    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                SubMenu08   0x0005d0    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                SubMenu10   0x0005e8    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                SubMenu11   0x000600    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                SubMenu12   0x000618    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                SubMenu20   0x000630    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                SubMenu30   0x000648    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+               SubMenu100   0x00064a    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+               SubMenu101   0x000662    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+               SubMenu102   0x00067a    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+               scrollLoop   0x0006a0    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+               SubMenu103   0x000708    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+               QuitPushed   0x000720    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+    QuitButtonJustPressed   0x000724    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                EndIfQuit   0x000820    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                  QuitOne   0x000824    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+           QuitOneForLoop   0x000828    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                  QuitTwo   0x00083c    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+           QuitTwoForLoop   0x000844    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+              BackAndQuit   0x000858    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+              RightPushed   0x000860    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+   RightButtonJustPressed   0x000864    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+         EndIfScrollRight   0x0008fc    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+            ScrollDownOne   0x000900    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+               LeftPushed   0x000906    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+    LeftButtonJustPressed   0x00090a    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+          EndIfScrollLeft   0x0009a2    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+              ScrollUpOne   0x0009a6    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+           SelectedPushed   0x0009ac    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+  SelectButtonJustPressed   0x0009b0    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+               EndIfEnter   0x000a0c    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+         EnterOneAndStart   0x000a10    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                 EnterOne   0x000a2a    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+          EnterOneForLoop   0x000a2e    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                 EnterTwo   0x000a42    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+          EnterTwoForLoop   0x000a4a    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                     Save   0x000a5e    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+           numregtobcdreg   0x000a62    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                 hundloop   0x000a6a    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                  tenloop   0x000a78    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                  oneloop   0x000a86    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                     Tens   0x000ab4    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                     Huns   0x000ac6    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+            InitializeLCD   0x000ad0    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+           WriteInstToLCD   0x000b28    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+           WriteDataToLCD   0x000b40    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+         Write16DataToLCD   0x000b58    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                Loop16LCD   0x000b5c    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                  MoveMSB   0x000b68    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                 ClearLCD   0x000b74    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                 ClockLCD   0x000b82    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                 Delay5ms   0x000b8e    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+             Delay5msLoop   0x000b96    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+             _.org_2_0B98   0x000b98    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+             _.org_2_0BA2   0x000ba2    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                Delay44us   0x000baa    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+            Delay44usLoop   0x000bae    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+               Delay500ms   0x000bb6    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+      Delay500msDelayLoop   0x000bc2    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+             _.org_2_0BC4   0x000bc4    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+             _.org_2_0BCA   0x000bca    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
                 Interrupt   0x000bd8    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
-                 PowerOff   0x000bda    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
+                 PowerOff   0x000bdc    program     static C:\Users\micha\Documents\AER201\AER201\aer201.X\main.asm
 
 

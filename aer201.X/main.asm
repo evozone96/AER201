@@ -266,7 +266,7 @@ Main
     clrf	DelayCounter9
     clrf	DelayCounter10
     clrf	OperatingMode
-    call	Delay500ms
+    
     call	InitializeLCD
     store	MenuLocation, B'11111100'
     call	UpdateDisplay
